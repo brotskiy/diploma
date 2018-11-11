@@ -6,6 +6,7 @@
 #include <QTextStream>
 
 #include "input.h"
+#include "eq_rhs_creation.h"
 #include "particle.h"
 
 #include "runge-kutta.h"
@@ -28,7 +29,6 @@ class MainEngine: public QObject
 
   public:
     void readFromFile(const QString& fileName);
-
     void rk4();
 
     typeData getData() {return data;}

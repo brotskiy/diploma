@@ -13,7 +13,7 @@ class Widget : public QWidget
 
 
   private:
-   QVector<QPointF> points;
+   QVector<QVector<QPointF>> points;
   public:
    explicit Widget(QWidget *parent = nullptr);
 
@@ -25,16 +25,18 @@ class Widget : public QWidget
 
       QPainter painter(this);
 
+      painter.setPen(QPen(Qt::red, 1, Qt::SolidLine, Qt::FlatCap));
+      painter.drawRect(100, 100, 2*100+100, 5*100+100); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
 
-     // painter.drawRect(300,300, 600, 600); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      for (int i = 0; i < points.size()-1; i++)
-        painter.drawLine(points.at(i), points.at(i+1));
+      for (int i = 0; i < points.size(); i++)
+        for (int j = 0; j < points.at(i).size()-1; j++)
+         painter.drawLine(points.at(i).at(j), points.at(i).at(j+1));
     }
 
   public slots:
-    void to_repaint(const QVector<QPointF>& a)
+    void to_repaint(const QVector<QVector<QPointF>>& a)
     {
       points = a;
 

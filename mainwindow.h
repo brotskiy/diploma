@@ -5,6 +5,10 @@
 #include <QtWidgets>
 #include <QFileDialog>
 
+#include <QFile>
+#include <QTextStream>
+#include <QString>
+
 #include <QPointF>
 #include "widget.h"
 
@@ -30,7 +34,7 @@ class MainWindow : public QMainWindow
 
   //--------------------------------------------
   signals:
-    void to_curve(const QVector<QPointF>& a);
+    void to_curve(const QVector<QVector<QPointF>>& a);
   //--------------------------------------------
 
 };

@@ -29,7 +29,8 @@ SOURCES += \
     runge-kutta.cpp \
     input.cpp \
     mainengine.cpp \
-    widget.cpp
+    widget.cpp \
+    eq_rhs_creation.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -41,4 +42,5 @@ HEADERS += \
     runge-kutta.h \
     input.h \
     mainengine.h \
-    widget.h
+    widget.h \
+    eq_rhs_creation.h
