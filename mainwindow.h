@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QFileDialog>
+#include <QFileInfo>
 
 #include <QFile>
 #include <QTextStream>

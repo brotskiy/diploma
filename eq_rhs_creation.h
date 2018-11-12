@@ -2,8 +2,23 @@
 #define EQ_RHS_CREATION_H
 
 #define MY_PI 3.1415926535
+#define MY_ZERO 1e-9
 
-#include <QVector>                 // для sin и cos
+#include <QVector>   // для sin, cos и fabs
+
+struct basisCell    // характеризует одну базисную функцию C * sin(...) * sin(...)
+{
+  int i, j;          // коэффициенты i и j, на которых строится базисная функция
+};
+
+struct psiCell      // характеризует одно слагаемое в уравнении, определяющим зависимость psi_k от различных theta_n
+{
+  double val;
+  int index;
+
+  psiCell() {}
+  explicit psiCell(double vl, int indx) : val(vl), index(indx) {}
+};
 
 double intSin2D(const int ik, const double bnd);
 

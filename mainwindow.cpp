@@ -25,13 +25,25 @@ void MainWindow::createConnections()
 
 void MainWindow::slotOpen()
 {
-  QString name = QFileDialog::getOpenFileName(this, "Explorer", "", "Text files(*.txt)");
+  QString name = QFileDialog::getOpenFileName(this, "Explorer", "", "Input files(*.opn *.crte)");
 
   if (name != "")
   {
-    engn.readFromFile(name);
+    QFileInfo mfi(name);
+    QString mfext = mfi.completeSuffix();
+
+    if (mfext.contains("opn"))
+      engn.readFromFile(name);
+
+    if (mfext.contains("crte"))
+      engn.createEqRhs(name);
+
+
+qDebug() << engn.getRhs().eqX.size(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     engn.rk4();
 
+    //---------------------------------------------------------------------
     for (int part = 0; part < engn.getPart(); part++)
     {
       QString name = "output" + QString::number(part) + ".txt";
@@ -46,12 +58,13 @@ void MainWindow::slotOpen()
           double x = engn.getData().coords.at(step).at(part).x;
           double y = engn.getData().coords.at(step).at(part).y;
 
-          stream <<"("<< x <<" "<< y <<") ";
+          stream <<"("<< x <<" "<< y <<")"<< endl;
         }
-        stream << endl << endl;
+        stream << endl;
         output.close();
       }
     }
+    //---------------------------------------------------------------------
 
     //------------------------------------------
     QVector<QVector<QPointF>> a;

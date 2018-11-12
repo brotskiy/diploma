@@ -38,7 +38,7 @@ double intSub(const int i, const int ii, const double a)
 
 double intSinCosSin(const int i, const int ii, const int ik, const double a)
 {
-  if ((ik != i + ii) && (ik != ii - i) && (ik != i - ii))
+  if ((ik != i + ii) && (ik != ii - i) && (ik != i - ii))  // все остальные варианты, кроме случая обращения знаменателя в 0
   {
     double dnm = ik*ik*ik*ik - 2*ik*ik*i*i + i*i*i*i - 2*ik*ik*ii - 2*ii*ii*i*i + ii*ii*ii*ii;
 
