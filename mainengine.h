@@ -52,6 +52,8 @@ class MainEngine: public QObject
     typeRhs getRhs() {return rhs;}
     int getStep() {return stepAmount;}
     int getPart() {return particleAmount;}
+    double getA() { return abnd; }
+    double getB() { return bbnd; }
 
 };
 

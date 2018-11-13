@@ -43,4 +43,5 @@ HEADERS += \
     input.h \
     mainengine.h \
     widget.h \
-    eq_rhs_creation.h
+    eq_rhs_creation.h \
+    drawing_struct.h

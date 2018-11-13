@@ -20,7 +20,7 @@ void MainWindow::createConnections()
   button = menuBar->actions().at(0)->menu()->actions().at(2);
   connect(button, SIGNAL(triggered(bool)), qApp, SLOT(quit()));
 
-  connect(this, SIGNAL(to_curve(const QVector<QVector<QPointF>>&)), this->centralWidget(), SLOT(to_repaint(const QVector<QVector<QPointF>>&)));
+  connect(this, SIGNAL(to_curve(const drawing_struct&)), this->centralWidget(), SLOT(to_repaint(const drawing_struct&)));
 }
 
 void MainWindow::slotOpen()
@@ -67,24 +67,33 @@ void MainWindow::slotOpen()
     //---------------------------------------------------------------------
 
     //------------------------------------------
-    QVector<QVector<QPointF>> a;
+    //QVector<QVector<QPointF>> a;
+    drawing_struct drw;
 
     for (int part = 0; part < engn.getPart(); part++)
     {
+      drw.abnd = engn.getA();
+      drw.bbnd = engn.getB();
+
+      if (drw.abnd > drw.bbnd)
+        drw.scale = (width()-10) / drw.abnd;
+      else
+        drw.scale = (height()-10) / drw.bbnd;
+
       QVector<QPointF> tmp;
 
       for (int step = 0; step < engn.getData().coords.size(); step++)
       {
         qreal x = engn.getData().coords.at(step).at(part).x;
-        x = x * 100 + 100;
+        x = x * drw.scale;
         qreal y = engn.getData().coords.at(step).at(part).y;
-        y = y * 100 + 100;
+        y = y * drw.scale;
         tmp.append(QPointF(x, y));
       }
-      a.append(tmp);
+      drw.points.append(tmp);
     }
 
-    emit to_curve(a);
+    emit to_curve(drw);
     //------------------------------------------
   }
 }

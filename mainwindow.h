@@ -13,6 +13,7 @@
 #include <QPointF>
 #include "widget.h"
 
+
 #include "mainengine.h"
 
 class MainWindow : public QMainWindow
@@ -35,7 +36,8 @@ class MainWindow : public QMainWindow
 
   //--------------------------------------------
   signals:
-    void to_curve(const QVector<QVector<QPointF>>& a);
+    //void to_curve(const QVector<QVector<QPointF>>& a);
+    void to_curve(const drawing_struct& a);
   //--------------------------------------------
 
 };

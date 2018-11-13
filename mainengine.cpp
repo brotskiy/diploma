@@ -13,6 +13,12 @@ void MainEngine::readFromFile(const QString& fileName)
     QString tmp = stream.readLine();
     QStringList tmpLst = tmp.split(" ");
 
+    abnd = tmpLst.at(0).toDouble();
+    bbnd = tmpLst.at(1).toDouble();
+
+    tmp = stream.readLine();
+    tmpLst = tmp.split(" ");
+
     tbegin = tmpLst.at(0).toDouble();
     tend = tmpLst.at(1).toDouble();
 
