@@ -33,13 +33,10 @@ class MainEngine: public QObject
     void crtEq1(const QVector<basisCell>& basis, QVector<QVector<psiCell>>& psi);
     void crtEq2(const QVector<basisCell>& basis, const QVector<QVector<psiCell>>& psi);
 
-    void crtEq2Sub1(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
+    void crtEq2Sub32(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
                     const int i, const int j, const int ii, const int jj, const int n, const int k, const int count);
 
-    void crtEq2Sub2(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
-                    const int i, const int j, const int ii, const int jj, const int n, const int k, const int count);
-
-    void crtEq2Sub3(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
+    void crtEq2Sub5(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
                     const int i, const int j, const int k, const int count);
 
     void crtEq2Sub4(const double xpr1, const int ik, const int jk, const int count);

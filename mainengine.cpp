@@ -96,13 +96,7 @@ void MainEngine::crtEq1(const QVector<basisCell>& basis, QVector<QVector<psiCell
     const int ik = basis[k].i;
     const int jk = basis[k].j;
 
-qDebug() << ik << jk; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     const double xpr1 = (-1*ik*ik/(abnd*abnd) - jk*jk/(bbnd*bbnd)) * MY_PI*MY_PI * 4/(abnd*bbnd) * intSin2D(ik, abnd) * intSin2D(jk, bbnd);
-
-
-double proverka = (-1*ik*ik/(abnd*abnd) - jk*jk/(bbnd*bbnd)) * MY_PI*MY_PI * 4/(abnd*bbnd); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-qDebug() << proverka; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     for (int n = 0; n < equationAmount; n++)
     {
@@ -117,54 +111,38 @@ qDebug() << proverka; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   }
 }
 
-void MainEngine::crtEq2Sub1(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
+void MainEngine::crtEq2Sub32(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
                             const int i, const int j, const int ii, const int jj, const int n, const int k, const int count)
 {
-  const double xpr2 = 4*j*ii*MY_PI*MY_PI/(abnd*abnd*bbnd*bbnd) * 2/(sqrt(abnd*bbnd)) * intSinCosSin(i,ii,ik,abnd) * intSinCosSin(jj,j,jk,bbnd);
+  const double xpr2 = 2/(sqrt(abnd*bbnd)) * MY_PI*MY_PI * j/bbnd * ii/abnd * intSinCosSin(i,ii,ik,abnd) * intSinCosSin(jj,j,jk,bbnd);
+  const double xpr3 = 2/(sqrt(abnd*bbnd)) * MY_PI*MY_PI * i/abnd * jj/bbnd * intSinCosSin(ii,i,ik,abnd) * intSinCosSin(j,jj,jk,bbnd);
 
-  if (fabs(xpr2/xpr1) > MY_ZERO)                      // стоит ли добавлять это слагаемое (не 0 ли оно)?
+  if (fabs(xpr3-xpr2) > MY_ZERO)                        // не 0 ли числитель?
   {
-    const double coeff = -1 * xpr2/xpr1;              // считаем коэффициент, стоящий перед интегралами при взятии проекции
+    const double diff = xpr3 - xpr2;
 
-    for (int t = 0; t < psi.at(k).size(); t++)        // смотрим eq1: перебираем все theta, из суммы которых состоит текущее psi_k
+    if (fabs(diff/xpr1) > MY_ZERO)                      // стоит ли добавлять это слагаемое (не 0 ли оно)?
     {
-      cellDiff tmp;                                   // создаем член результирующей системы: d(theta_1)/dt = A*theta_1*theta_2 + B*theta_3 + ...
+      const double coeff = diff / xpr1;                 // считаем коэффициент, стоящий перед интегралами при взятии проекции
 
-      tmp.val = coeff * psi.at(k).at(t).val;          // его коэфф. - это коэфф. проекции умножить на соответствующий коефф. при theta в eq1
-      tmp.indices.append(n);                          // добавляем в член номер текущего theta_n из формулы проекции
-      tmp.indices.append(psi.at(k).at(t).index);      // добавляем номер theta из уравнения eq1, соответствующего текущему psi_k
+      for (int t = 0; t < psi.at(k).size(); t++)        // смотрим eq1: перебираем все theta, из суммы которых состоит текущее psi_k
+      {
+        cellDiff tmp;                                   // создаем член результирующей системы: d(theta_1)/dt = A*theta_1*theta_2 + B*theta_3 + ...
 
-      rhs.diffs[count].append(tmp);                   // добавляем полученный член в модель к соответствующему уравнению du/dt = ...
+        tmp.val = coeff * psi.at(k).at(t).val;          // его коэфф. - это коэфф. проекции умножить на соответствующий коефф. при theta в eq1
+        tmp.indices.append(n);                          // добавляем в член номер текущего theta_n из формулы проекции
+        tmp.indices.append(psi.at(k).at(t).index);      // добавляем номер theta из уравнения eq1, соответствующего текущему psi_k
+
+        rhs.diffs[count].append(tmp);                   // добавляем полученный член в модель к соответствующему уравнению du/dt = ...
+      }
     }
   }
 }
 
-void MainEngine::crtEq2Sub2(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
-                            const int i, const int j, const int ii, const int jj, const int n, const int k, const int count)
-{
-  const double xpr3 = 4*i*jj*MY_PI*MY_PI/(abnd*abnd*bbnd*bbnd) * 2/(sqrt(abnd*bbnd)) * intSinCosSin(ii,i,ik,abnd) * intSinCosSin(j,jj,jk,bbnd);
-
-  if (fabs(xpr3/xpr1) > MY_ZERO)
-  {
-    const double coeff = xpr3/xpr1;
-
-    for (int t = 0; t < psi.at(k).size(); t++)
-    {
-      cellDiff tmp;
-
-      tmp.val = coeff * psi.at(k).at(t).val;
-      tmp.indices.append(n);
-      tmp.indices.append(psi.at(k).at(t).index);
-
-      rhs.diffs[count].append(tmp);
-    }
-  }
-}
-
-void MainEngine::crtEq2Sub3(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
+void MainEngine::crtEq2Sub5(const QVector<QVector<psiCell>>& psi, const double xpr1, const int ik, const int jk,
                             const int i, const int j, const int k, const int count)
 {
-  const double xpr5 = 2/(sqrt(abnd*bbnd)) * i*MY_PI/abnd * intCosSin(i,ik,abnd) * intSinSin(j,jk,bbnd);
+  const double xpr5 = i * MY_PI/abnd * intCosSin(i,ik,abnd) * intSinSin(j,jk,bbnd);
 
   if (fabs(xpr5/xpr1) > MY_ZERO)
   {
@@ -185,9 +163,9 @@ void MainEngine::crtEq2Sub3(const QVector<QVector<psiCell>>& psi, const double x
 
 void MainEngine::crtEq2Sub4(const double xpr1, const int ik, const int jk, const int count)
 {
-  const double xpr4 = 2/(sqrt(abnd*bbnd)) * MY_PI*MY_PI * (ik*ik/(abnd*abnd) + jk*jk/(bbnd*bbnd)) * intSin2D(ik,abnd) * intSin2D(jk,bbnd);
+  const double xpr4 = MY_PI*MY_PI * (ik*ik/(abnd*abnd) + jk*jk/(bbnd*bbnd)) * intSin2D(ik,abnd) * intSin2D(jk,bbnd);
 
-  if (fabs(xpr4/xpr1) > MY_ZERO)
+  if (fabs(xpr4/xpr1) > MY_ZERO)       // по идее тут должны сокращаться интегралы
   {
     const double coeff = -1 * xpr4 / xpr1;
 
@@ -207,46 +185,38 @@ void MainEngine::crtEq2(const QVector<basisCell>& basis, const QVector<QVector<p
     const int ik = basis[count].i;
     const int jk = basis[count].j;
 
-    const double xpr1 = 4/(abnd*bbnd) * intSin2D(ik, abnd) * intSin2D(jk, bbnd);
+    const double xpr1 = intSin2D(ik, abnd) * intSin2D(jk, bbnd);
+
+    crtEq2Sub4(xpr1, ik, jk, count);
 
     for (int k = 0; k < equationAmount; k++)     // psi
     {
       const int i = basis[k].i;
       const int j = basis[k].j;
 
+      crtEq2Sub5(psi, xpr1, ik, jk, i, j, k, count);
+
       for (int n = 0; n < equationAmount; n++)   // theta
       {
         const int ii = basis[n].i;
         const int jj = basis[n].j;
 
-        crtEq2Sub1(psi, xpr1, ik, jk, i, j, ii, jj, n, k, count);
-        crtEq2Sub2(psi, xpr1, ik, jk, i, j, ii, jj, n, k, count);
+        crtEq2Sub32(psi, xpr1, ik, jk, i, j, ii, jj, n, k, count);
       }
-
-        crtEq2Sub3(psi, xpr1, ik, jk, i, j, k, count);
     }
-
-    crtEq2Sub4(xpr1, ik, jk, count);
   }
 }
 
 void MainEngine::crtCoords(const QVector<basisCell>& basis, const QVector<QVector<psiCell>>& psi)
 {
-
-//qDebug() << "I'm here!"; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   for (int k = 0; k < equationAmount; k++)
   {
     const int i = basis[k].i;
     const int j = basis[k].j;
 
-//qDebug() << "I'm here!"; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     for (int t = 0; t < psi.at(k).size(); t++)
     {
       cellCoord tmpx, tmpy;
-
-//qDebug() << "I'm here!"; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       tmpx.val = -1 * psi.at(k).at(t).val * 2/(sqrt(abnd*bbnd)) * j*MY_PI/bbnd;
       tmpx.valSin = i * MY_PI / abnd;
@@ -323,6 +293,36 @@ void MainEngine::createEqRhs(const QString& fileName)
 
     rhs.diffs.resize(equationAmount);
     crtEq2(basis, psi);
+
+// -----------------------------------------------------------------------------------------------------------------------------------
+//    for (int i = 0; i < equationAmount; i++)
+//    {
+//      for (int j = 0; j < psi.at(i).size();j++)
+//        qDebug() << psi.at(i).at(j).val <<"| u" << psi.at(i).at(j).index+1;
+//      qDebug() << "---------------------------------";
+//    }
+
+//  for (int i = 0; i < rhs.diffs.size(); i++)
+//  {
+//    qDebug() << "   EQUATION" << i;
+//    for (int j = 0; j < rhs.diffs.at(i).size(); j++)
+//    {
+//      qDebug() << j <<"| "<< rhs.diffs.at(i).at(j).val << (rhs.diffs.at(i).at(j).hasL ? "  L  " : "") << rhs.diffs.at(i).at(j).indices;
+//    }
+//     qDebug() << "===================================";
+//  }
+
+//    for (int ik = 1; ik <= sqrt(equationAmount); ik++)
+//      for (int i = 1; i <= sqrt(equationAmount); i++)
+//        for (int ii = 1; ii <= sqrt(equationAmount); ii++)
+//        {
+//          qDebug() << i << ii << ik<< "| "<< intSinCosSin(i,ii,ik,abnd) << " " << intSinCosSin(ii,i,ik,abnd);
+//        }
+
+//  int xpr1 = 45;
+//  int xpr2 = 76;
+//  qDebug() << sqrt(xpr1*xpr2);
+// -----------------------------------------------------------------------------------------------------------------------------------
 
     crtCoords(basis, psi);
 
