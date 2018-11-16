@@ -1,7 +1,5 @@
 #include "runge-kutta.h"
 
-
-#include <QMainWindow> // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include <QtWidgets>
 #include <QFileDialog>
 
@@ -136,20 +134,16 @@ QVector<particle> evalCoordAtStep(const typeRhs& rhs, const typeData& data, cons
   return currentData;
 }
 
-void rk4full(const typeRhs& rhs, typeData& data, const double tbegin, const double tend, const int stepAmount, const int equationAmount, const int particleAmount, const double L)
+void rk4step(const typeRhs& rhs, typeData& data, const double tbegin, const double h,
+             const int step, const int equationAmount, const int particleAmount, const double L)
 {
-  double h = (tend - tbegin)/stepAmount;    // приращение времени
+  QVector<QVector<double>> tmpAddDiff; // прибавка к аргументу theta_i для каждого из коэффициентов K
 
-  for (int step = 1; step <= stepAmount; step++)      // идем по шагам
-  {
-    QVector<QVector<double>> tmpAddDiff;
+  QVector<double> tmpDiff = evalDiffAtStep(rhs, data, equationAmount, step, h, L,tmpAddDiff);      // вычисляем все theta на текущем шаге
 
-    QVector<double> tmpDiff = evalDiffAtStep(rhs, data, equationAmount, step, h, L,tmpAddDiff);      // вычисляем все theta на текущем шаге
+  QVector<particle> tmpCoord = evalCoordAtStep(rhs, data, particleAmount, step, h, tmpAddDiff);    // вычисляем координаты точек на текущем шаге
 
-    QVector<particle> tmpCoord = evalCoordAtStep(rhs, data, particleAmount, step, h, tmpAddDiff);    // вычисляем координаты точек на текущем шаге
-
-    data.diffs.push_back(tmpDiff);
-    data.coords.push_back(tmpCoord);
-    data.time.push_back(tbegin + step*h);       // значение времени на текущем шаге
-  }
+  data.diffs.push_back(tmpDiff);
+  data.coords.push_back(tmpCoord);
+  data.time.push_back(tbegin + step*h);       // значение времени на текущем шаге
 }

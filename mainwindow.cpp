@@ -38,12 +38,29 @@ void MainWindow::slotOpen()
     if (mfext.contains("crte"))
       engn.createEqRhs(name);
 
+    rk4(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-//qDebug() << engn.getRhs().eqX.size(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // --------------------------------------------------------
+    QString nameu = "theta.txt";
+    QFile outTheta(nameu);
 
-    engn.rk4();
+    if (outTheta.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+      QTextStream stream(&outTheta);
 
-    //---------------------------------------------------------------------
+      for (int i = 0; i < engn.getData().diffs.size(); i++)
+      {
+        for (int j = 0; j < engn.getData().diffs.at(i).size(); j++)
+          stream << engn.getData().diffs.at(i).at(j) << " ";
+
+        stream << endl;
+      }
+
+      outTheta.close();
+    }
+    // --------------------------------------------------------
+
+    //---------------------------------------------------------
     for (int part = 0; part < engn.getPart(); part++)
     {
       QString name = "output" + QString::number(part) + ".txt";
@@ -64,52 +81,72 @@ void MainWindow::slotOpen()
         output.close();
       }
     }
-    //---------------------------------------------------------------------
+    //------------------------------------------------------------
 
-    //------------------------------------------
-    //QVector<QVector<QPointF>> a;
-    drawing_struct drw;
-
-    for (int part = 0; part < engn.getPart(); part++)
-    {
-      drw.abnd = engn.getA();
-      drw.bbnd = engn.getB();
-
-      if (drw.abnd > drw.bbnd)
-        drw.scale = (width()-10) / drw.abnd;
-      else
-        drw.scale = (height()-10) / drw.bbnd;
-
-      QVector<QPointF> tmp;
-
-      for (int step = 0; step < engn.getData().coords.size(); step++)
-      {
-        qreal x = engn.getData().coords.at(step).at(part).x;
-        x = x * drw.scale;
-        qreal y = engn.getData().coords.at(step).at(part).y;
-        y = y * drw.scale;
-        tmp.append(QPointF(x, y));
-      }
-      drw.points.append(tmp);
-    }
-
-    emit to_curve(drw);
-    //------------------------------------------
+    drawTrajectory();
   }
 }
 
-MainWindow::MainWindow(QWidget* parent): QMainWindow(parent) // OK
+void MainWindow::drawTrajectory()
+{
+  drw.abnd = engn.getA();
+  drw.bbnd = engn.getB();
+
+  if (drw.abnd > drw.bbnd)
+    drw.scale = (width()-15) / drw.abnd;
+  else
+    drw.scale = (height()-40) / drw.bbnd;
+
+  drw.points.resize(engn.getPart()); // !!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  for (int part = 0; part < engn.getPart(); part++)  // перебираем все частицы
+  {
+    drw.points[part].resize(engn.getData().coords.size()); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    for (int step = 0; step < engn.getData().coords.size(); step++)
+    {
+      qreal x = engn.getData().coords.at(step).at(part).x;
+      x = x * drw.scale;
+      qreal y = engn.getData().coords.at(step).at(part).y;
+      y = y * drw.scale;
+
+      drw.points[part][step] = QPointF(x, y);
+    }
+  }
+
+  emit to_curve(drw);
+}
+
+void MainWindow::rk4()
+{
+  const double tbegin = engn.getTBegin();
+  const double tend = engn.getTEnd();
+  const int stepAmount = engn.getStep();
+
+  const double h = (tend - tbegin)/stepAmount;    // приращение времени
+
+  for (int step = 1; step <= stepAmount; step++)      // идем по шагам
+  {
+    engn.rk4_step(h, step);
+
+    if (step == 2000)
+    {
+      // посылаю всякие другие сигналы
+
+    }
+  }
+}
+
+MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
 {
   resize(1024, 768);
 
   createMenuBar(this);
   setMenuBar(menuBar);
 
-  //----------------------------------------------
   Widget* scene = new Widget(parent);
   scene->resize(800,600);
   setCentralWidget(scene);
-  //----------------------------------------------
 
   createConnections();
 }

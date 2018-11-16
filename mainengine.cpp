@@ -1,7 +1,5 @@
 #include "mainengine.h"
 
-#include <QtWidgets> // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 void MainEngine::readFromFile(const QString& fileName)
 {
   QFile file(fileName);
@@ -77,14 +75,9 @@ void MainEngine::readFromFile(const QString& fileName)
   }
 }
 
-void MainEngine::rk4()
-{
-  rk4full(rhs,data,tbegin,tend,stepAmount,equationAmount,particleAmount, L);   // с Числом Рэлея !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-}
-
 void MainEngine::crtBas(QVector<basisCell>& basis)
 {
-  int cntr = 0;   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  int cntr = 0;
 
   for (int i = 1; i <= sqrt(equationAmount); i++)
     for (int j = 1; j <= sqrt(equationAmount); j++)
@@ -300,39 +293,13 @@ void MainEngine::createEqRhs(const QString& fileName)
     rhs.diffs.resize(equationAmount);
     crtEq2(basis, psi);
 
-// -----------------------------------------------------------------------------------------------------------------------------------
-//    for (int i = 0; i < equationAmount; i++)
-//    {
-//      for (int j = 0; j < psi.at(i).size();j++)
-//        qDebug() << psi.at(i).at(j).val <<"| u" << psi.at(i).at(j).index+1;
-//      qDebug() << "---------------------------------";
-//    }
-
-//  for (int i = 0; i < rhs.diffs.size(); i++)
-//  {
-//    qDebug() << "   EQUATION" << i;
-//    for (int j = 0; j < rhs.diffs.at(i).size(); j++)
-//    {
-//      qDebug() << j <<"| "<< rhs.diffs.at(i).at(j).val << (rhs.diffs.at(i).at(j).hasL ? "  L  " : "") << rhs.diffs.at(i).at(j).indices;
-//    }
-//     qDebug() << "===================================";
-//  }
-
-//    for (int ik = 1; ik <= sqrt(equationAmount); ik++)
-//      for (int i = 1; i <= sqrt(equationAmount); i++)
-//        for (int ii = 1; ii <= sqrt(equationAmount); ii++)
-//        {
-//          qDebug() << i << ii << ik<< "| "<< intSinCosSin(i,ii,ik,abnd) << " " << intSinCosSin(ii,i,ik,abnd);
-//        }
-
-//  int xpr1 = 45;
-//  int xpr2 = 76;
-//  qDebug() << sqrt(xpr1*xpr2);
-// -----------------------------------------------------------------------------------------------------------------------------------
-
     crtCoords(basis, psi);
 
     file.close();
   }
 }
 
+void MainEngine::rk4_step(const double h, const int step)
+{
+  rk4step(rhs, data, tbegin, h, step, equationAmount, particleAmount, L);
+}

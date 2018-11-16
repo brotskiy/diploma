@@ -46,15 +46,17 @@ class MainEngine: public QObject
   public:
     void readFromFile(const QString& fileName);
     void createEqRhs(const QString& fileName);
-    void rk4();
+   //  void rk4();
+    void rk4_step(const double h, const int step);
 
-    typeData getData() {return data;}
-    typeRhs getRhs() {return rhs;}
-    int getStep() {return stepAmount;}
-    int getPart() {return particleAmount;}
-    double getA() { return abnd; }
-    double getB() { return bbnd; }
-
+    const typeData& getData() const {return data;}
+    const typeRhs& getRhs() const {return rhs;}
+    int getStep() const {return stepAmount;}
+    int getPart() const {return particleAmount;}
+    double getA() const { return abnd; }
+    double getB() const { return bbnd; }
+    double getTBegin() const { return tbegin; }
+    double getTEnd() const { return tend; }
 };
 
 #endif // MAINENGINE_H
