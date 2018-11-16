@@ -8,45 +8,44 @@
 #include <QColor>
 
 #include "drawing_struct.h"
-
+#include "particle.h"
 
 #include <QtWidgets>
-
 
 class Widget : public QWidget
 {
     Q_OBJECT
 
   private:
-    const drawing_struct* drw = nullptr;
-    const drawing_struct* drw2 = nullptr;
+    drawing_struct drw;
 
-    bool needTrajectory = false;
-    bool needParticle = false;
+    QImage img;
 
-    void drawTrajectory();
+    void drawTrajectory(const QVector<QVector<particle>>& a);
+    void drawBorders();
 
   public:
-    explicit Widget(QWidget *parent = nullptr);
+    explicit Widget(QWidget* parent = nullptr);
 
   protected:
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent* event)
     {
-      Q_UNUSED(event);
-
-      if (needTrajectory)
-        drawTrajectory();
-
-    //  if (needParticle)
-      //  drawParticle();
+      Q_UNUSED(event)
+      QPainter painter(this);
+      painter.drawImage(0, 0, img);
     }
 
   public slots:
-    void to_repaint(const drawing_struct& a)
+    void brdr(drawing_struct a)
     {
-      needTrajectory = true;
-      drw = &a;
+      drw = a;
+      drawBorders();
+      update();
+    }
 
+    void crv(const QVector<QVector<particle>>& a)
+    {
+      drawTrajectory(a);
       update();
     }
 

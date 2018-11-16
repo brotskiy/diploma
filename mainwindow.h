@@ -23,14 +23,13 @@ class MainWindow : public QMainWindow
   private:
     MainEngine engn;
 
-    drawing_struct drw;
-
     QMenuBar* menuBar;
 
     void createConnections();
     void createMenuBar(MainWindow* parent);
 
     void drawTrajectory();
+    void drawBorders();
     void drawParticles(const int step);
 
     void rk4();
@@ -42,7 +41,8 @@ class MainWindow : public QMainWindow
     void slotOpen();
 
   signals:
-     void to_curve(const drawing_struct& a);
+    void toBorders(drawing_struct a);
+    void toCurve(const QVector<QVector<particle>>& a);
 };
 
 #endif // MAINWINDOW_H

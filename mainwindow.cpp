@@ -20,7 +20,8 @@ void MainWindow::createConnections()
   button = menuBar->actions().at(0)->menu()->actions().at(2);
   connect(button, SIGNAL(triggered(bool)), qApp, SLOT(quit()));
 
-  connect(this, SIGNAL(to_curve(const drawing_struct&)), this->centralWidget(), SLOT(to_repaint(const drawing_struct&)));
+  connect(this, SIGNAL(toCurve(const QVector<QVector<particle>>&)), this->centralWidget(), SLOT(crv(const QVector<QVector<particle>>&)));
+  connect(this, SIGNAL(toBorders(drawing_struct)), this->centralWidget(), SLOT(brdr(drawing_struct)));
 }
 
 void MainWindow::slotOpen()
@@ -37,6 +38,8 @@ void MainWindow::slotOpen()
 
     if (mfext.contains("crte"))
       engn.createEqRhs(name);
+
+    drawBorders();
 
     rk4(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -87,8 +90,10 @@ void MainWindow::slotOpen()
   }
 }
 
-void MainWindow::drawTrajectory()
+void MainWindow::drawBorders()
 {
+  drawing_struct drw;
+
   drw.abnd = engn.getA();
   drw.bbnd = engn.getB();
 
@@ -97,24 +102,12 @@ void MainWindow::drawTrajectory()
   else
     drw.scale = (height()-40) / drw.bbnd;
 
-  drw.points.resize(engn.getPart()); // !!!!!!!!!!!!!!!!!!!!!!!!!!!
+  emit toBorders(drw);
+}
 
-  for (int part = 0; part < engn.getPart(); part++)  // перебираем все частицы
-  {
-    drw.points[part].resize(engn.getData().coords.size()); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    for (int step = 0; step < engn.getData().coords.size(); step++)
-    {
-      qreal x = engn.getData().coords.at(step).at(part).x;
-      x = x * drw.scale;
-      qreal y = engn.getData().coords.at(step).at(part).y;
-      y = y * drw.scale;
-
-      drw.points[part][step] = QPointF(x, y);
-    }
-  }
-
-  emit to_curve(drw);
+void MainWindow::drawTrajectory()
+{
+  emit toCurve(engn.getData().coords);
 }
 
 void MainWindow::rk4()
@@ -128,6 +121,8 @@ void MainWindow::rk4()
   for (int step = 1; step <= stepAmount; step++)      // идем по шагам
   {
     engn.rk4_step(h, step);
+
+    qApp->processEvents(); // надо сделать нормально с отдельным потоком !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     if (step == 2000)
     {
@@ -144,7 +139,7 @@ MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
   createMenuBar(this);
   setMenuBar(menuBar);
 
-  Widget* scene = new Widget(parent);
+  Widget* scene = new Widget(this);
   scene->resize(800,600);
   setCentralWidget(scene);
 
