@@ -23,21 +23,22 @@ class MainEngineShell: public QObject
 
     ~MainEngineShell();                             // ++
 
-  void computeAll();
-
   void drawBorders();                               //  ++
   void rk4();                                       //  ++
   void writeDataToFiles() const;                    //  ++
   void drawTrajectory();                            //  ++
 
   public slots:
-    void beginWork();                                // ++
+//    void beginWork();                                // ++
     void openInitialFile(const QString& fileName);   // ++
+    void computeAll();
 
   signals:
     void toBorders(drawing_struct a);                   // ++
     void toCurve(const QVector<QVector<particle>>& a);  // ++
     void toDots(const QVector<particle>& a);             // ++
+    void partAmount(int prtAm);
+    void currentStep(int step);
 
 };
 

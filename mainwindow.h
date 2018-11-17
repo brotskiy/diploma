@@ -28,19 +28,26 @@ class MainWindow : public QMainWindow
     QThread* thread;
 
     QMenuBar* menuBar;
+    QToolBar* toolBar;
+    QAction* txtEdit;
+    QComboBox* comboBox;
 
     void createConnections();                 // ++
     void createMenuBar(MainWindow* parent);   // ++
-
 
   public:
     explicit MainWindow(QWidget *parent = nullptr);
 
   private slots:
     void slotOpen();                           // ++
+    void fillComboBox(int prtAm);
+    void setTxtEdit(int step);
+    void activateToolBox();
 
   signals:
     void wantToOpenFile(const QString& fileName);    // ++
+    void partAmount(int prtAm);
+    void readyForComputations();
 
 };
 

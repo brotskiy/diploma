@@ -4,70 +4,118 @@
 #include <QtWidgets>
 
 Widget::Widget(QWidget* parent): QWidget(parent)
+{  
+}
+
+Widget::~Widget()
 {
-  img = QImage(parent->width(),parent->height(),QImage::Format_ARGB32);
+  if (img != nullptr)  // зачем лишний раз удалять, если и так нету
+    delete img;
+}
+
+void Widget::setParticleAmont(int prtAm)
+{
+  particleAmount = prtAm;
+
+  img = new QVector<QImage>(1 + particleAmount, QImage(1024,768,QImage::Format_ARGB32));
+
+  emit readyForComputations();
 }
 
 void Widget::drawBorders()
 {
-  QPainter painter(&img);
+  for (int part = 0; part < 1 + particleAmount; part++)
+  {
+    QPainter painter(&((*img)[part]));
 
-  painter.setRenderHint(QPainter::Antialiasing);
-  painter.translate(10, 10 + drw.bbnd*drw.scale);
-  painter.rotate(180);
-  painter.scale(-1,1);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.translate(10, 10 + drw.bbnd*drw.scale);
+    painter.rotate(180);
+    painter.scale(-1,1);
 
-  painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
-  painter.drawRect(QRectF(0, 0, drw.abnd*drw.scale, drw.bbnd*drw.scale));
+    painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
+    painter.drawRect(QRectF(0, 0, drw.abnd*drw.scale, drw.bbnd*drw.scale));
+  }
 }
 
 void Widget::drawParticles(const QVector<particle>& a)
 {
-  QPainter painter(&img);
+  QPainter painterM(&((*img)[0]));
 
-  painter.setRenderHint(QPainter::Antialiasing);
-  painter.translate(10, 10 + drw.bbnd*drw.scale);
-  painter.rotate(180);
-  painter.scale(-1,1);
+  painterM.setRenderHint(QPainter::Antialiasing);
+  painterM.translate(10, 10 + drw.bbnd*drw.scale);
+  painterM.rotate(180);
+  painterM.scale(-1,1);
 
   qsrand(1337);
 
-  for (int part = 0; part < a.size(); part++)
+  for (int part = 0; part < particleAmount; part++)   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   {
+    QPainter painterP(&((*img)[1 + part]));
+
+    painterP.setRenderHint(QPainter::Antialiasing);
+    painterP.translate(10, 10 + drw.bbnd*drw.scale);
+    painterP.rotate(180);
+    painterP.scale(-1,1);
+
     QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
-    QPen pen(QBrush(color), 5, Qt::SolidLine, Qt::RoundCap);
-    painter.setPen(pen);
+    QPen pen(QBrush(color), 4, Qt::SolidLine, Qt::RoundCap);
+
+    painterM.setPen(pen);
+    painterP.setPen(pen);
 
     qreal x0 = drw.scale * a.at(part).x;
     qreal y0 = drw.scale * a.at(part).y;
-    painter.drawPoint(QPointF(x0,y0));
+
+    painterM.drawPoint(QPointF(x0,y0));
+    painterP.drawPoint(QPointF(x0,y0));
   }
 }
 
 void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
 {
-  QPainter painter(&img);
+  for (int part = 0; part < 1 + particleAmount; part++)
+  {
+    (*img)[part] = QImage(1024,768,QImage::Format_ARGB32);
+  }
 
-  painter.setRenderHint(QPainter::Antialiasing);
-  painter.translate(10, 10 + drw.bbnd*drw.scale);
-  painter.rotate(180);
-  painter.scale(-1,1);
+  drawBorders();
+
+  QPainter painterM(&((*img)[0]));
+
+  painterM.setRenderHint(QPainter::Antialiasing);
+  painterM.translate(10, 10 + drw.bbnd*drw.scale);
+  painterM.rotate(180);
+  painterM.scale(-1,1);
 
   qsrand(1337);
 
-  for (int part = 0; part < a.at(0).size(); part++)         // в начальном условии есть хотя бы 1 частица
+  for (int part = 0; part < particleAmount; part++)         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   {
+    QPainter painterP(&((*img)[1 + part]));
+
+    painterP.setRenderHint(QPainter::Antialiasing);
+    painterP.translate(10, 10 + drw.bbnd*drw.scale);
+    painterP.rotate(180);
+    painterP.scale(-1,1);
+
     QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
-    QPen pen(QBrush(color), 5, Qt::SolidLine, Qt::RoundCap);
-    painter.setPen(pen);
+    QPen pen(QBrush(color), 4, Qt::SolidLine, Qt::RoundCap);
+
+    painterM.setPen(pen);
+    painterP.setPen(pen);
 
     qreal x0 = drw.scale * a.at(0).at(part).x;
     qreal y0 = drw.scale * a.at(0).at(part).y;
-    painter.drawPoint(QPointF(x0,y0));
+
+    painterM.drawPoint(QPointF(x0,y0));
+    painterP.drawPoint(QPointF(x0,y0));
 
     pen.setWidth(1);
     pen.setCapStyle(Qt::FlatCap);
-    painter.setPen(pen);
+
+    painterM.setPen(pen);
+    painterP.setPen(pen);
 
     for (int step = 0; step < a.size() - 1; step++)
     {
@@ -77,7 +125,8 @@ void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
       qreal xii = drw.scale * a.at(step+1).at(part).x;
       qreal yii = drw.scale * a.at(step+1).at(part).y;
 
-      painter.drawLine(QPointF(xi,yi), QPointF(xii,yii));
+      painterM.drawLine(QPointF(xi,yi), QPointF(xii,yii));
+      painterP.drawLine(QPointF(xi,yi), QPointF(xii,yii));
     }
   }
 }

@@ -8,17 +8,19 @@ MainEngineShell::MainEngineShell(QObject* parent) : QObject(parent)
 
 MainEngineShell::~MainEngineShell()
 {
-    if (engn != nullptr)
+    if (engn != nullptr)  // зачем лишний раз удалять, если и так нету
       delete engn;
 }
 
-void MainEngineShell::beginWork()
-{
-  engn = new MainEngine(this); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-}
+//void MainEngineShell::beginWork()
+//{
+//  engn = new MainEngine(this);
+//}
 
 void MainEngineShell::openInitialFile(const QString& fileName)
 {
+  engn = new MainEngine(this); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   QFileInfo mfi(fileName);
   QString mfext = mfi.completeSuffix();
 
@@ -28,7 +30,8 @@ void MainEngineShell::openInitialFile(const QString& fileName)
   if (mfext.contains("crte"))
     engn->createEqRhs(fileName);
 
-  computeAll();
+  emit partAmount(engn->getPart());
+ // computeAll();
 }
 
 void MainEngineShell::computeAll()
@@ -49,7 +52,7 @@ void MainEngineShell::drawBorders()
   if (drw.abnd > drw.bbnd)
     drw.scale = (1024 - 15) / drw.abnd;
   else
-    drw.scale = (768 - 40) / drw.bbnd;
+    drw.scale = (768 - 70) / drw.bbnd;
 
   emit toBorders(drw);
 }
@@ -66,10 +69,11 @@ void MainEngineShell::rk4()
   {
     engn->rk4_step(h, step);
 
-    if (step % 250 == 0)
+    if (step % 100 == 0)
     {
       emit toDots(engn->getParticlesAtStep(step));
     //  qDebug() << step;  // посылаю всякие другие сигналы
+      emit currentStep(step);
       // --------------------------------------------------------
     }
   }
@@ -85,17 +89,3 @@ void MainEngineShell::drawTrajectory()
 {
   emit toCurve(engn->getParticles());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

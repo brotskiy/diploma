@@ -12,14 +12,18 @@
 
 #include <QtWidgets>
 
+#include <QVector>
+
 class Widget : public QWidget
 {
     Q_OBJECT
 
   private:
-    drawing_struct drw;
+    int particleAmount;
+    int current = 0;
 
-    QImage img;
+    drawing_struct drw;
+    QVector<QImage>* img = nullptr;
 
     void drawTrajectory(const QVector<QVector<particle>>& a);
     void drawBorders();
@@ -28,15 +32,31 @@ class Widget : public QWidget
   public:
     explicit Widget(QWidget* parent = nullptr);
 
+    ~Widget();
+
   protected:
     void paintEvent(QPaintEvent* event)
     {
       Q_UNUSED(event)
       QPainter painter(this);
-      painter.drawImage(0, 0, img);
+
+      if (img != nullptr)
+        painter.drawImage(0, 0, img->at(current));
     }
 
   public slots:
+    void setParticleAmont(int prtAm);
+
+    void setCurrentImg(const QString& cur)
+    {
+      if (cur.contains("MASTER"))
+        current = 0;
+      else
+        current = cur.toInt();
+
+      update();
+    }
+
     void brdr(drawing_struct a)
     {
       drw = a;
@@ -55,6 +75,11 @@ class Widget : public QWidget
       drawParticles(a);
       update();
     }
+
+  signals:
+    void readyForComputations();   // Если очень много точек, то массив может не успеть создасться до того,
+                                   // как начнут приходить первые запросы на отрисовку. Поэтому этот сигнал
+                                   // скажет движку начинать только после того, как "холсты" будут готовы.
 
 };
 
