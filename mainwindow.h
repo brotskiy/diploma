@@ -4,10 +4,8 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QFileDialog>
-#include <QFileInfo>
+#include <QThread>
 
-#include <QFile>
-#include <QTextStream>
 #include <QString>
 
 #include <QPointF>
@@ -15,34 +13,35 @@
 #include "widget.h"
 
 #include "mainengine.h"
+#include "mainengineshell.h"
 
+Q_DECLARE_METATYPE(drawing_struct)
+Q_DECLARE_METATYPE(particle)
+Q_DECLARE_METATYPE(QVector<QVector<particle>>)
+Q_DECLARE_METATYPE(QVector<particle>)
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
 
   private:
-    MainEngine engn;
+    MainEngineShell* engnShell;
+    QThread* thread;
 
     QMenuBar* menuBar;
 
-    void createConnections();
-    void createMenuBar(MainWindow* parent);
+    void createConnections();                 // ++
+    void createMenuBar(MainWindow* parent);   // ++
 
-    void drawTrajectory();
-    void drawBorders();
-    void drawParticles(const int step);
-
-    void rk4();
 
   public:
     explicit MainWindow(QWidget *parent = nullptr);
 
   private slots:
-    void slotOpen();
+    void slotOpen();                           // ++
 
   signals:
-    void toBorders(drawing_struct a);
-    void toCurve(const QVector<QVector<particle>>& a);
+    void wantToOpenFile(const QString& fileName);    // ++
+
 };
 
 #endif // MAINWINDOW_H

@@ -299,6 +299,51 @@ void MainEngine::createEqRhs(const QString& fileName)
   }
 }
 
+void MainEngine::writeThetasToFile() const
+{
+  QString name = "theta.txt";
+  QFile outTheta(name);
+
+  if (outTheta.open(QIODevice::WriteOnly | QIODevice::Truncate))
+  {
+    QTextStream stream(&outTheta);
+
+    for (int i = 0; i < data.diffs.size(); i++)
+    {
+      for (int j = 0; j < data.diffs.at(i).size(); j++)
+        stream << data.diffs.at(i).at(j) << " ";
+
+      stream << endl;
+    }
+
+    outTheta.close();
+  }
+}
+
+void MainEngine::writeCoordsToFile() const
+{
+  for (int part = 0; part < particleAmount; part++)
+  {
+    QString name = "output" + QString::number(part) + ".txt";
+    QFile output(name);
+
+    if (output.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+      QTextStream stream(&output);
+
+      for (int step = 0; step < data.coords.size(); step++)
+      {
+        double x = data.coords.at(step).at(part).x;
+        double y = data.coords.at(step).at(part).y;
+
+        stream <<"("<< x <<" "<< y <<")"<< endl;
+      }
+      stream << endl;
+      output.close();
+    }
+  }
+}
+
 void MainEngine::rk4_step(const double h, const int step)
 {
   rk4step(rhs, data, tbegin, h, step, equationAmount, particleAmount, L);

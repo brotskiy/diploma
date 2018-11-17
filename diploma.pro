@@ -30,7 +30,8 @@ SOURCES += \
     input.cpp \
     mainengine.cpp \
     widget.cpp \
-    eq_rhs_creation.cpp
+    eq_rhs_creation.cpp \
+    mainengineshell.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,4 +45,5 @@ HEADERS += \
     mainengine.h \
     widget.h \
     eq_rhs_creation.h \
-    drawing_struct.h
+    drawing_struct.h \
+    mainengineshell.h

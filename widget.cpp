@@ -21,6 +21,29 @@ void Widget::drawBorders()
   painter.drawRect(QRectF(0, 0, drw.abnd*drw.scale, drw.bbnd*drw.scale));
 }
 
+void Widget::drawParticles(const QVector<particle>& a)
+{
+  QPainter painter(&img);
+
+  painter.setRenderHint(QPainter::Antialiasing);
+  painter.translate(10, 10 + drw.bbnd*drw.scale);
+  painter.rotate(180);
+  painter.scale(-1,1);
+
+  qsrand(1337);
+
+  for (int part = 0; part < a.size(); part++)
+  {
+    QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
+    QPen pen(QBrush(color), 5, Qt::SolidLine, Qt::RoundCap);
+    painter.setPen(pen);
+
+    qreal x0 = drw.scale * a.at(part).x;
+    qreal y0 = drw.scale * a.at(part).y;
+    painter.drawPoint(QPointF(x0,y0));
+  }
+}
+
 void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
 {
   QPainter painter(&img);

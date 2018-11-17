@@ -23,6 +23,7 @@ class Widget : public QWidget
 
     void drawTrajectory(const QVector<QVector<particle>>& a);
     void drawBorders();
+    void drawParticles(const QVector<particle>& a);
 
   public:
     explicit Widget(QWidget* parent = nullptr);
@@ -46,6 +47,12 @@ class Widget : public QWidget
     void crv(const QVector<QVector<particle>>& a)
     {
       drawTrajectory(a);
+      update();
+    }
+
+    void prtcls(const QVector<particle>& a)
+    {
+      drawParticles(a);
       update();
     }
 

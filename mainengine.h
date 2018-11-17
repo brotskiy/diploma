@@ -44,13 +44,19 @@ class MainEngine: public QObject
     void crtCoords(const QVector<basisCell>& basis, const QVector<QVector<psiCell>>& psi);
 
   public:
-    void readFromFile(const QString& fileName);
-    void createEqRhs(const QString& fileName);
-   //  void rk4();
-    void rk4_step(const double h, const int step);
+    MainEngine(QObject* parent = nullptr) : QObject(parent) {}
 
-    const typeData& getData() const {return data;}
-    const typeRhs& getRhs() const {return rhs;}
+    void readFromFile(const QString& fileName);    // ++
+    void createEqRhs(const QString& fileName);     // ++
+    void rk4_step(const double h, const int step); // ++
+    void writeCoordsToFile() const;
+    void writeThetasToFile() const;
+
+//    const typeData& getData() const {return data;}
+//    const typeRhs& getRhs() const {return rhs;}
+
+    const QVector<QVector<particle>>& getParticles() const { return data.coords; }
+    const QVector<particle>& getParticlesAtStep(int step) const { return data.coords.at(step); }
     int getStep() const {return stepAmount;}
     int getPart() const {return particleAmount;}
     double getA() const { return abnd; }
