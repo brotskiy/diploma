@@ -59,7 +59,7 @@ void Widget::drawParticles(const QVector<particle>& a)
     painterP.scale(-1,1);
 
     QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
-    QPen pen(QBrush(color), 4, Qt::SolidLine, Qt::RoundCap);
+    QPen pen(QBrush(color), 3, Qt::SolidLine, Qt::RoundCap);
 
     painterM.setPen(pen);
     painterP.setPen(pen);
@@ -100,7 +100,7 @@ void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
     painterP.scale(-1,1);
 
     QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
-    QPen pen(QBrush(color), 4, Qt::SolidLine, Qt::RoundCap);
+    QPen pen(QBrush(color), 5, Qt::SolidLine, Qt::RoundCap);
 
     painterM.setPen(pen);
     painterP.setPen(pen);

@@ -7,7 +7,8 @@
 #include "typerhs.h"
 #include "typedata.h"
 
-QVector<double> evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step, const double L, const QVector<double>& add);
+void evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
+               const double L, QVector<double>& K, const QVector<double>& add, const double coeffK);
 
 QVector<double> evalDiffAtStep(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
                                const double h, const double L, QVector<QVector<double>>& tmpAddDiff);

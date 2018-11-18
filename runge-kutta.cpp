@@ -4,56 +4,47 @@
 #include <QFileDialog>
 
 
-QVector<double> evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step, const double L, const QVector<double>& add)
+void evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
+               const double L, QVector<double>& K, const QVector<double>& add, const double coeffK)
 {
-  QVector<double> dataDiffAtStep = data.diffs.at(step-1);             // значения всех theta с предыдущего шага
-  QVector<double> result(equationAmount, 0);
+  const QVector<double>& dataDiffAtStep = data.diffs.at(step-1);             // значения всех theta с предыдущего шага
 
   for (int eqNum = 0; eqNum < equationAmount; eqNum++)         // перебираем все уравнения системы
   {  
-    QVector<cellDiff> rhsOneEq = rhs.diffs.at(eqNum);          // правая часть одного уравнения с соответствующим номером
+    const QVector<cellDiff>& rhsOneEq = rhs.diffs.at(eqNum);          // правая часть одного уравнения с соответствующим номером
 
     for (int i = 0; i < rhsOneEq.size(); i++)                  // перебираем все слагаемые в правой части некого уравнения системы
     {
       double tmp = 1;
 
       for (int j = 0; j < rhsOneEq[i].indices.size(); j++)
-        tmp *= (dataDiffAtStep[rhsOneEq[i].indices[j]] + add.at(rhsOneEq[i].indices[j]));   // произведение всех theta (+добавка), из которых состоит слагаемое
+        tmp *= (dataDiffAtStep[rhsOneEq[i].indices[j]] + coeffK * add.at(rhsOneEq[i].indices[j]));   // произведение всех theta (+добавка), из которых состоит слагаемое
 
       if (rhsOneEq.at(i).hasL)                    // если слагаемое имеет число Рэлея !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         tmp *= L;                                 // то умножаем на него !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      result[eqNum] += tmp * rhsOneEq[i].val;                         // не забываем умножить на число-коэффициент и накапливаем слагаемые дальше
+      K[eqNum] += tmp * rhsOneEq[i].val;                         // не забываем умножить на число-коэффициент и накапливаем слагаемые дальше
     }
   }
-
-  return result;
 }
 
-QVector<double> evalDiffAtStep(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step, const double h, const double L, QVector<QVector<double>>& tmpAddDiff)
+QVector<double> evalDiffAtStep(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
+                               const double h, const double L, QVector<QVector<double>>& tmpAddDiff)
 {
   QVector<double> currentData;   // искомые значения всех theta_j на данном шаге
 
-  QVector<double> add(equationAmount, 0); // добавка к аргументу
-  QVector<double> K1 = evalDiffK(rhs, data, equationAmount, step, L, add);
 
+  QVector<double> K1(equationAmount, 0);
+  QVector<double> K2(equationAmount, 0);
+  evalDiffK(rhs, data, equationAmount, step, L, K1, K2, 0);
 
-  for (int eqNum = 0; eqNum < equationAmount; eqNum++)   // по очереди высчитываем значения коэффициентов K для всех уравнений системы
-    add[eqNum] = h/2 * K1.at(eqNum);
+  evalDiffK(rhs, data, equationAmount, step, L, K2, K1, h/2);
 
-  QVector<double> K2 = evalDiffK(rhs, data, equationAmount, step, L, add);
+  QVector<double> K3(equationAmount, 0);
+  evalDiffK(rhs, data, equationAmount, step, L, K3, K2, h/2);
 
-
-  for (int eqNum = 0; eqNum < equationAmount; eqNum++)
-    add[eqNum] = h/2 * K2.at(eqNum);
-
-  QVector<double> K3 = evalDiffK(rhs, data, equationAmount, step, L, add);
-
-
-  for (int eqNum = 0; eqNum < equationAmount; eqNum++)
-    add[eqNum] = h * K3.at(eqNum);
-
-  QVector<double> K4 = evalDiffK(rhs, data, equationAmount, step, L, add);
+  QVector<double> K4(equationAmount, 0);
+  evalDiffK(rhs, data, equationAmount, step, L, K4, K3, h);
 
 
   for (int eqNum = 0; eqNum < equationAmount; eqNum++)    // вычисление оценки всех theta на текущем шаге
@@ -73,11 +64,11 @@ QVector<double> evalDiffAtStep(const typeRhs& rhs, const typeData& data, const i
 QPair<double, double> evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumber, const int step,
                                  const double addX, const double addY, const QVector<double>& addDiffForK)
 {
-  QVector<cellCoord> rhsEqX = rhs.eqX;                             // правая часть уравнения для нахождения координаты X
-  QVector<cellCoord> rhsEqY = rhs.eqY;                             // правая часть уравнения для нахождения координаты Y
+  const QVector<cellCoord>& rhsEqX = rhs.eqX;                             // правая часть уравнения для нахождения координаты X
+  const QVector<cellCoord>& rhsEqY = rhs.eqY;                             // правая часть уравнения для нахождения координаты Y
 
-  QVector<particle> dataCoordAtStep = data.coords.at(step-1);      // значения всех координат с предыдущего шага
-  QVector<double> dataDiffAtStep = data.diffs.at(step-1);          // значения всех theta с предыдущего шага
+  const QVector<particle>& dataCoordAtStep = data.coords.at(step-1);      // значения всех координат с предыдущего шага
+  const QVector<double>& dataDiffAtStep = data.diffs.at(step-1);          // значения всех theta с предыдущего шага
 
   QPair<double, double> result(0,0);
 

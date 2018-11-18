@@ -12,11 +12,6 @@ MainEngineShell::~MainEngineShell()
       delete engn;
 }
 
-//void MainEngineShell::beginWork()
-//{
-//  engn = new MainEngine(this);
-//}
-
 void MainEngineShell::openInitialFile(const QString& fileName)
 {
   engn = new MainEngine(this); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -31,7 +26,6 @@ void MainEngineShell::openInitialFile(const QString& fileName)
     engn->createEqRhs(fileName);
 
   emit partAmount(engn->getPart());
- // computeAll();
 }
 
 void MainEngineShell::computeAll()
@@ -67,14 +61,17 @@ void MainEngineShell::rk4()
 
   for (int step = 1; step <= stepAmount; step++)      // идем по шагам
   {
-    engn->rk4_step(h, step);
+    //QTime t;
+    //t.start();
+        engn->rk4_step(h, step);
+    //int ms = t.elapsed();
 
-    if (step % 100 == 0)
+    if (step % 250 == 0)
     {
       emit toDots(engn->getParticlesAtStep(step));
-    //  qDebug() << step;  // посылаю всякие другие сигналы
       emit currentStep(step);
-      // --------------------------------------------------------
+
+      //qDebug() << ms;
     }
   }
 }

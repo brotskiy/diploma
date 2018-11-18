@@ -51,7 +51,6 @@ void MainWindow::slotOpen()
     engnShell = new MainEngineShell;   // инициализировали начинку
     engnShell->moveToThread(thread);   // поместили начинку в рабочий поток
 
-//    connect(thread, SIGNAL(started()), engnShell, SLOT(beginWork()));
     connect(this, SIGNAL(wantToOpenFile(const QString&)), engnShell, SLOT(openInitialFile(const QString&)));
     connect(engnShell, SIGNAL(toBorders(drawing_struct)), this->centralWidget(), SLOT(brdr(drawing_struct)));
     connect(engnShell, SIGNAL(toCurve(const QVector<QVector<particle>>&)), this->centralWidget(), SLOT(crv(const QVector<QVector<particle>>&)));
