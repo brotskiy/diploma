@@ -7,11 +7,11 @@
 #include "typerhs.h"
 #include "typedata.h"
 
-void evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
-               const double L, QVector<double>& K, const QVector<double>& add, const double coeffK);
+void evalDiffK(const typeRhs& rhs, typeData& data, const int equationAmount, const int step,
+               const double L, QVector<double>& K, const QVector<double>& add, const double coeffK, const int KNumber, const double coeffKResult);
 
-QVector<double> evalDiffAtStep(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
-                               const double h, const double L, QVector<QVector<double>>& tmpAddDiff);
+void evalDiffAtStep(const typeRhs& rhs, typeData& data, const int equationAmount, const int step,
+                    const double h, const double L, QVector<QVector<double>>& tmpAddDiff);
 
 
 QPair<double, double> evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumber, const int step,

@@ -61,17 +61,17 @@ void MainEngineShell::rk4()
 
   for (int step = 1; step <= stepAmount; step++)      // идем по шагам
   {
-    //QTime t;
-    //t.start();
+    QTime t;
+    t.start();
         engn->rk4_step(h, step);
-    //int ms = t.elapsed();
+    int ms = t.elapsed();
 
     if (step % 250 == 0)
     {
       emit toDots(engn->getParticlesAtStep(step));
-      emit currentStep(step);
+      emit currentStep(Pair(step, ms));
 
-      //qDebug() << ms;
+      // qDebug() << sizeof(QTime)  << ms;
     }
   }
 }

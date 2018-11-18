@@ -3,10 +3,14 @@
 
 #include <QObject>
 #include <QFileInfo>
+#include <QMetaType>
 
 #include <QString>
 #include <QPointF>
 #include "drawing_struct.h"
+
+#include <QPair>
+typedef QPair<int, int> Pair;
 
 #include "mainengine.h"
 #include "particle.h"
@@ -38,7 +42,7 @@ class MainEngineShell: public QObject
     void toCurve(const QVector<QVector<particle>>& a);  // ++
     void toDots(const QVector<particle>& a);             // ++
     void partAmount(int prtAm);
-    void currentStep(int step);
+    void currentStep(const Pair& stepData);
 
 };
 

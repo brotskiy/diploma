@@ -47,6 +47,7 @@ class MainEngine: public QObject
     MainEngine(QObject* parent = nullptr) : QObject(parent) {}
 
     void readConsts(QTextStream& stream);
+    void resizeData(QTextStream& stream);
 
     void readFromFile(const QString& fileName);
     void createEqRhs(const QString& fileName);

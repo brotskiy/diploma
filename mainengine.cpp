@@ -1,5 +1,7 @@
 #include "mainengine.h"
 
+#include <QtWidgets>
+
 void MainEngine::readConsts(QTextStream& stream)
 {
   QString tmp = stream.readLine();
@@ -20,6 +22,30 @@ void MainEngine::readConsts(QTextStream& stream)
   L = stream.readLine().toDouble();                // Число Рэлея
 }
 
+void MainEngine::resizeData(QTextStream& stream)
+{
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    data.time.resize(1 + stepAmount);
+    data.time[0] = tbegin;
+
+    QString tmp = stream.readLine();
+    QStringList tmpLstThetas = tmp.split(" ");
+
+    data.diffs.resize(1 + stepAmount);
+
+    for (int i = 0; i < 1 + stepAmount; i++)
+    {
+      data.diffs[i].resize(equationAmount);
+
+      for (int j = 0; j < equationAmount; j++)
+        if (i == 0)
+          data.diffs[i][j] = tmpLstThetas[i].toDouble();
+        else
+          data.diffs[i][j] = 0;
+    }
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+}
+
 void MainEngine::readFromFile(const QString& fileName)
 {
   QFile file(fileName);
@@ -28,7 +54,7 @@ void MainEngine::readFromFile(const QString& fileName)
   {
     QTextStream stream(&file);
 
-    readConsts(stream);
+    readConsts(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     for (int i = 0; i <equationAmount; i++)
     {
@@ -49,16 +75,9 @@ void MainEngine::readFromFile(const QString& fileName)
     tmpVec = proccessOneCoord(tmp);
     rhs.eqY = tmpVec;
 
-    // --------- теперь читаются начальные данные ------------------
-
-    tmp = stream.readLine();
-    QStringList tmpLst = tmp.split(" ");
-
-    QVector<double> tmpVec2;
-    for (int i = 0; i < equationAmount; i++)
-      tmpVec2.append(tmpLst[i].toDouble());
-
-    data.diffs.append(tmpVec2);
+    resizeData(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+       // for (int i = 0; i < 1 + stepAmount; i++)
+          //qDebug() << i << data.diffs.at(i);
 
     QVector<particle> tmpVec3;
     for (int i = 0; i < particleAmount; i++)
@@ -66,7 +85,7 @@ void MainEngine::readFromFile(const QString& fileName)
       particle tmpPrt;
 
       tmp = stream.readLine();
-      tmpLst = tmp.split(" ");
+      QStringList tmpLst = tmp.split(" ");
       tmpPrt.x = tmpLst.at(0).toDouble();
       tmpPrt.y = tmpLst.at(1).toDouble();
 
@@ -74,7 +93,6 @@ void MainEngine::readFromFile(const QString& fileName)
     }
 
     data.coords.append(tmpVec3);
-    data.time.append(tbegin);
 
     file.close();
   }
@@ -246,24 +264,18 @@ void MainEngine::createEqRhs(const QString& fileName)
   {
     QTextStream stream(&file);
 
-    readConsts(stream);
-
-    QString tmp = stream.readLine();
-    QStringList tmpLst = tmp.split(" ");
-
-    QVector<double> tmpVec2;
-    for (int i = 0; i < equationAmount; i++)
-      tmpVec2.append(tmpLst[i].toDouble());
-
-    data.diffs.append(tmpVec2);
+    readConsts(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    resizeData(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //for (int i = 0; i < 1 + stepAmount; i++)
+          //qDebug() << i << data.diffs.at(i);
 
     QVector<particle> tmpVec3;
     for (int i = 0; i < particleAmount; i++)
     {
       particle tmpPrt;
 
-      tmp = stream.readLine();
-      tmpLst = tmp.split(" ");
+      QString tmp = stream.readLine();
+      QStringList tmpLst = tmp.split(" ");
       tmpPrt.x = tmpLst.at(0).toDouble();
       tmpPrt.y = tmpLst.at(1).toDouble();
 
@@ -271,7 +283,6 @@ void MainEngine::createEqRhs(const QString& fileName)
     }
 
     data.coords.append(tmpVec3);
-    data.time.append(tbegin);
 
     // ---------- создание системы ---------------
     QVector<basisCell> basis(equationAmount);

@@ -61,7 +61,7 @@ void MainWindow::slotOpen()
     connect(this->centralWidget(), SIGNAL(readyForComputations()), this, SLOT(activateToolBox()));
     connect(this, SIGNAL(readyForComputations()), engnShell, SLOT(computeAll()));
 
-    connect(engnShell, SIGNAL(currentStep(int)), this, SLOT(setTxtEdit(int)));
+    connect(engnShell, SIGNAL(currentStep(const Pair&)), this, SLOT(setTxtEdit(const Pair&)));
 
     thread->start();
     emit wantToOpenFile(name);
@@ -79,14 +79,14 @@ void MainWindow::fillComboBox(int prtAm)
 void MainWindow::activateToolBox()
 {
   comboBox->setEnabled(true);
-  txtEdit->setText("computations initialized...");
+  txtEdit->setText("computations started...");
 
   emit readyForComputations();
 }
 
-void MainWindow::setTxtEdit(int step)
+void MainWindow::setTxtEdit(const Pair& stepData)
 {
-  txtEdit->setText("step " + QString::number(step));
+  txtEdit->setText("step " + QString::number(stepData.first) + ", " + QString::number(stepData.second) + " ms");
 }
 
 MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
@@ -95,6 +95,7 @@ MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
   qRegisterMetaType<particle>();
   qRegisterMetaType<QVector<QVector<particle>>>();
   qRegisterMetaType<QVector<particle>>();
+  qRegisterMetaType<Pair>();
 
   resize(1024, 768);
 

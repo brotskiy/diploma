@@ -4,10 +4,10 @@
 #include <QFileDialog>
 
 
-void evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
-               const double L, QVector<double>& K, const QVector<double>& add, const double coeffK)
+void evalDiffK(const typeRhs& rhs, typeData& data, const int equationAmount, const int step,
+               const double L, QVector<double>& K, const QVector<double>& add, const double coeffK, const int KNumber, const double coeffKResult)
 {
-  const QVector<double>& dataDiffAtStep = data.diffs.at(step-1);             // значения всех theta с предыдущего шага
+  const QVector<double>& dataDiffAtPrevStep = data.diffs.at(step-1);             // значения всех theta с предыдущего шага
 
   for (int eqNum = 0; eqNum < equationAmount; eqNum++)         // перебираем все уравнения системы
   {  
@@ -18,47 +18,49 @@ void evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmoun
       double tmp = 1;
 
       for (int j = 0; j < rhsOneEq[i].indices.size(); j++)
-        tmp *= (dataDiffAtStep[rhsOneEq[i].indices[j]] + coeffK * add.at(rhsOneEq[i].indices[j]));   // произведение всех theta (+добавка), из которых состоит слагаемое
+        tmp *= (dataDiffAtPrevStep[rhsOneEq[i].indices[j]] + coeffK * add.at(rhsOneEq[i].indices[j]));   // произведение всех theta (+добавка), из которых состоит слагаемое
 
       if (rhsOneEq.at(i).hasL)                    // если слагаемое имеет число Рэлея
         tmp *= L;                                 // то умножаем на него
 
       K[eqNum] += tmp * rhsOneEq[i].val;                         // не забываем умножить на число-коэффициент и накапливаем слагаемые дальше
     }
+
+    if ( KNumber == 1)
+      data.diffs[step][eqNum] += dataDiffAtPrevStep.at(eqNum) + coeffKResult * K.at(eqNum);
+    else
+      data.diffs[step][eqNum] += coeffKResult * K.at(eqNum);
   }
+
+  // конец функции ------------------------------------------------
 }
 
-QVector<double> evalDiffAtStep(const typeRhs& rhs, const typeData& data, const int equationAmount, const int step,
+void evalDiffAtStep(const typeRhs& rhs, typeData& data, const int equationAmount, const int step,
                                const double h, const double L, QVector<QVector<double>>& tmpAddDiff)
 {
-  QVector<double> currentData;   // искомые значения всех theta_j на данном шаге
-
-
   QVector<double> K1(equationAmount, 0);
   QVector<double> K2(equationAmount, 0);
-  evalDiffK(rhs, data, equationAmount, step, L, K1, K2, 0);
+  evalDiffK(rhs, data, equationAmount, step, L, K1, K2, 0, 1, h/6);
 
-  evalDiffK(rhs, data, equationAmount, step, L, K2, K1, h/2);
+  evalDiffK(rhs, data, equationAmount, step, L, K2, K1, h/2, 2, h/6 * 2);
 
   QVector<double> K3(equationAmount, 0);
-  evalDiffK(rhs, data, equationAmount, step, L, K3, K2, h/2);
+  evalDiffK(rhs, data, equationAmount, step, L, K3, K2, h/2, 3, h/6 * 2);
 
   QVector<double> K4(equationAmount, 0);
-  evalDiffK(rhs, data, equationAmount, step, L, K4, K3, h);
+  evalDiffK(rhs, data, equationAmount, step, L, K4, K3, h, 4, h/6);
 
 
-  for (int eqNum = 0; eqNum < equationAmount; eqNum++)    // вычисление оценки всех theta на текущем шаге
-  {
-    double tmp = data.diffs.at(step-1).at(eqNum) + h/6*(K1.at(eqNum) + 2*K2.at(eqNum) + 2*K3.at(eqNum) + K4.at(eqNum));
-    currentData.push_back(tmp);
-  }
+ // for (int eqNum = 0; eqNum < equationAmount; eqNum++)    // вычисление оценки всех theta на текущем шаге
+  //{
+       //  double tmp = data.diffs.at(step-1).at(eqNum) + h/6*(K1.at(eqNum) + 2*K2.at(eqNum) + 2*K3.at(eqNum) + K4.at(eqNum)); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //currentData.push_back(tmp);
+  //}
 
   tmpAddDiff.append(K1);
   tmpAddDiff.append(K2);
   tmpAddDiff.append(K3);
   tmpAddDiff.append(K4);
-
-  return currentData;
 }
 
 QPair<double, double> evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumber, const int step,
@@ -93,7 +95,8 @@ QPair<double, double> evalCoordK(const typeRhs& rhs, const typeData& data, const
   return result;
 }
 
-QVector<particle> evalCoordAtStep(const typeRhs& rhs, const typeData& data, const int particleAmount, const int step, const double h, const QVector<QVector<double>>& addDiff)
+QVector<particle> evalCoordAtStep(const typeRhs& rhs, const typeData& data, const int particleAmount, const int step,
+                                  const double h, const QVector<QVector<double>>& addDiff)
 {
   QVector<particle> currentData;  // искомые значения всех координат на данном шаге
 
@@ -128,13 +131,12 @@ QVector<particle> evalCoordAtStep(const typeRhs& rhs, const typeData& data, cons
 void rk4step(const typeRhs& rhs, typeData& data, const double tbegin, const double h,
              const int step, const int equationAmount, const int particleAmount, const double L)
 {
+  data.time[step] = tbegin + step*h;       // значение времени на текущем шаге
+
   QVector<QVector<double>> tmpAddDiff; // прибавка к аргументу theta_i для каждого из коэффициентов K
 
-  QVector<double> tmpDiff = evalDiffAtStep(rhs, data, equationAmount, step, h, L,tmpAddDiff);      // вычисляем все theta на текущем шаге
-
+  evalDiffAtStep(rhs, data, equationAmount, step, h, L,tmpAddDiff);      // вычисляем все theta на текущем шаге
   QVector<particle> tmpCoord = evalCoordAtStep(rhs, data, particleAmount, step, h, tmpAddDiff);    // вычисляем координаты точек на текущем шаге
 
-  data.diffs.push_back(tmpDiff);
   data.coords.push_back(tmpCoord);
-  data.time.push_back(tbegin + step*h);       // значение времени на текущем шаге
 }
