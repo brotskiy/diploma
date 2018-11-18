@@ -20,8 +20,8 @@ void evalDiffK(const typeRhs& rhs, const typeData& data, const int equationAmoun
       for (int j = 0; j < rhsOneEq[i].indices.size(); j++)
         tmp *= (dataDiffAtStep[rhsOneEq[i].indices[j]] + coeffK * add.at(rhsOneEq[i].indices[j]));   // произведение всех theta (+добавка), из которых состоит слагаемое
 
-      if (rhsOneEq.at(i).hasL)                    // если слагаемое имеет число Рэлея !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        tmp *= L;                                 // то умножаем на него !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      if (rhsOneEq.at(i).hasL)                    // если слагаемое имеет число Рэлея
+        tmp *= L;                                 // то умножаем на него
 
       K[eqNum] += tmp * rhsOneEq[i].val;                         // не забываем умножить на число-коэффициент и накапливаем слагаемые дальше
     }

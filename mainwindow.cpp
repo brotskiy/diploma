@@ -74,7 +74,6 @@ void MainWindow::fillComboBox(int prtAm)
     comboBox->addItem(QString::number(prt));
 
   emit partAmount(prtAm);
-
 }
 
 void MainWindow::activateToolBox()

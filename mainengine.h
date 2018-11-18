@@ -46,14 +46,13 @@ class MainEngine: public QObject
   public:
     MainEngine(QObject* parent = nullptr) : QObject(parent) {}
 
-    void readFromFile(const QString& fileName);    // ++
-    void createEqRhs(const QString& fileName);     // ++
-    void rk4_step(const double h, const int step); // ++
+    void readConsts(QTextStream& stream);
+
+    void readFromFile(const QString& fileName);
+    void createEqRhs(const QString& fileName);
+    void rk4_step(const double h, const int step);
     void writeCoordsToFile() const;
     void writeThetasToFile() const;
-
-//    const typeData& getData() const {return data;}
-//    const typeRhs& getRhs() const {return rhs;}
 
     const QVector<QVector<particle>>& getParticles() const { return data.coords; }
     const QVector<particle>& getParticlesAtStep(int step) const { return data.coords.at(step); }
