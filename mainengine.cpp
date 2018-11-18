@@ -7,14 +7,14 @@ void MainEngine::readConsts(QTextStream& stream)
   QString tmp = stream.readLine();
   QStringList tmpLst = tmp.split(" ");
 
-  abnd = tmpLst.at(0).toDouble();
-  bbnd = tmpLst.at(1).toDouble();
+  abnd = tmpLst[0].toDouble();
+  bbnd = tmpLst[1].toDouble();
 
   tmp = stream.readLine();
   tmpLst = tmp.split(" ");
 
-  tbegin = tmpLst.at(0).toDouble();
-  tend = tmpLst.at(1).toDouble();
+  tbegin = tmpLst[0].toDouble();
+  tend = tmpLst[1].toDouble();
 
   equationAmount = stream.readLine().toInt();
   particleAmount = stream.readLine().toInt();
@@ -29,9 +29,10 @@ void MainEngine::resizeData(QTextStream& stream)
     data.time[0] = tbegin;
 
     QString tmp = stream.readLine();
-    QStringList tmpLstThetas = tmp.split(" ");
+    QStringList tmpLst = tmp.split(" ");
 
     data.diffs.resize(1 + stepAmount);
+    data.coords.resize(1 + stepAmount);
 
     for (int i = 0; i < 1 + stepAmount; i++)
     {
@@ -39,9 +40,20 @@ void MainEngine::resizeData(QTextStream& stream)
 
       for (int j = 0; j < equationAmount; j++)
         if (i == 0)
-          data.diffs[i][j] = tmpLstThetas[i].toDouble();
+          data.diffs[i][j] = tmpLst[i].toDouble();
         else
           data.diffs[i][j] = 0;
+
+      data.coords[i].resize(particleAmount);
+    }
+
+    for (int j = 0; j < particleAmount; j++)
+    {
+      tmp = stream.readLine();
+      tmpLst = tmp.split(" ");
+
+      data.coords[0][j].x = tmpLst[0].toDouble();
+      data.coords[0][j].y = tmpLst[1].toDouble();
     }
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
@@ -76,23 +88,16 @@ void MainEngine::readFromFile(const QString& fileName)
     rhs.eqY = tmpVec;
 
     resizeData(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
        // for (int i = 0; i < 1 + stepAmount; i++)
-          //qDebug() << i << data.diffs.at(i);
+       // {
+         // qDebug() << i << data.diffs.at(i);
 
-    QVector<particle> tmpVec3;
-    for (int i = 0; i < particleAmount; i++)
-    {
-      particle tmpPrt;
+         // for (int j = 0; j < particleAmount; j++)
+           // qDebug() << i << j << data.coords.at(i).at(j).x << data.coords.at(i).at(j).y;
 
-      tmp = stream.readLine();
-      QStringList tmpLst = tmp.split(" ");
-      tmpPrt.x = tmpLst.at(0).toDouble();
-      tmpPrt.y = tmpLst.at(1).toDouble();
-
-      tmpVec3.append(tmpPrt);
-    }
-
-    data.coords.append(tmpVec3);
+         // qDebug() << "======================================";
+        //}
 
     file.close();
   }
@@ -147,13 +152,13 @@ void MainEngine::crtEq2Sub32(const QVector<QVector<psiCell>>& psi, const double 
     {
       const double coeff = diff / xpr1;                 // считаем коэффициент, стоящий перед интегралами при взятии проекции
 
-      for (int t = 0; t < psi.at(k).size(); t++)        // смотрим eq1: перебираем все theta, из суммы которых состоит текущее psi_k
+      for (int t = 0; t < psi[k].size(); t++)        // смотрим eq1: перебираем все theta, из суммы которых состоит текущее psi_k
       {
         cellDiff tmp;                                   // создаем член результирующей системы: d(theta_1)/dt = A*theta_1*theta_2 + B*theta_3 + ...
 
-        tmp.val = coeff * psi.at(k).at(t).val;          // его коэфф. - это коэфф. проекции умножить на соответствующий коефф. при theta в eq1
+        tmp.val = coeff * psi[k][t].val;          // его коэфф. - это коэфф. проекции умножить на соответствующий коефф. при theta в eq1
         tmp.indices.append(n);                          // добавляем в член номер текущего theta_n из формулы проекции
-        tmp.indices.append(psi.at(k).at(t).index);      // добавляем номер theta из уравнения eq1, соответствующего текущему psi_k
+        tmp.indices.append(psi[k][t].index);      // добавляем номер theta из уравнения eq1, соответствующего текущему psi_k
 
         rhs.diffs[count].append(tmp);                   // добавляем полученный член в модель к соответствующему уравнению du/dt = ...
       }
@@ -170,13 +175,13 @@ void MainEngine::crtEq2Sub5(const QVector<QVector<psiCell>>& psi, const double x
   {
     const double coeff = xpr5 / xpr1;
 
-    for (int t = 0; t < psi.at(k).size(); t++)
+    for (int t = 0; t < psi[k].size(); t++)
     {
       cellDiff tmp;
 
       tmp.hasL = true;
-      tmp.val = coeff * psi.at(k).at(t).val;
-      tmp.indices.append(psi.at(k).at(t).index);
+      tmp.val = coeff * psi[k][t].val;
+      tmp.indices.append(psi[k][t].index);
 
       rhs.diffs[count].append(tmp);
     }
@@ -236,19 +241,19 @@ void MainEngine::crtCoords(const QVector<basisCell>& basis, const QVector<QVecto
     const int i = basis[k].i;
     const int j = basis[k].j;
 
-    for (int t = 0; t < psi.at(k).size(); t++)
+    for (int t = 0; t < psi[k].size(); t++)
     {
       cellCoord tmpx, tmpy;
 
-      tmpx.val = -1 * psi.at(k).at(t).val * 2/(sqrt(abnd*bbnd)) * j*MY_PI/bbnd;
+      tmpx.val = -1 * psi[k][t].val * 2/(sqrt(abnd*bbnd)) * j*MY_PI/bbnd;
       tmpx.valSin = i * MY_PI / abnd;
       tmpx.valCos = j * MY_PI / bbnd;
-      tmpx.index = psi.at(k).at(t).index;
+      tmpx.index = psi[k][t].index;
 
-      tmpy.val = psi.at(k).at(t).val * 2/(sqrt(abnd*bbnd)) * i*MY_PI/abnd;
+      tmpy.val = psi[k][t].val * 2/(sqrt(abnd*bbnd)) * i*MY_PI/abnd;
       tmpy.valCos = i * MY_PI / abnd;
       tmpy.valSin = j * MY_PI / bbnd;
-      tmpy.index = psi.at(k).at(t).index;
+      tmpy.index = psi[k][t].index;
 
       rhs.eqX.append(tmpx);
       rhs.eqY.append(tmpy);
@@ -266,23 +271,16 @@ void MainEngine::createEqRhs(const QString& fileName)
 
     readConsts(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     resizeData(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //for (int i = 0; i < 1 + stepAmount; i++)
-          //qDebug() << i << data.diffs.at(i);
 
-    QVector<particle> tmpVec3;
-    for (int i = 0; i < particleAmount; i++)
-    {
-      particle tmpPrt;
+       //for (int i = 0; i < 1 + stepAmount; i++)
+        //{
+           // qDebug() << i << data.diffs.at(i);
 
-      QString tmp = stream.readLine();
-      QStringList tmpLst = tmp.split(" ");
-      tmpPrt.x = tmpLst.at(0).toDouble();
-      tmpPrt.y = tmpLst.at(1).toDouble();
+            //for (int j = 0; j < particleAmount; j++)
+            //qDebug() << i << j << data.coords.at(i).at(j).x << data.coords.at(i).at(j).y;
 
-      tmpVec3.append(tmpPrt);
-    }
-
-    data.coords.append(tmpVec3);
+            //qDebug() << "======================================";
+        //}
 
     // ---------- создание системы ---------------
     QVector<basisCell> basis(equationAmount);
@@ -311,8 +309,8 @@ void MainEngine::writeThetasToFile() const
 
     for (int i = 0; i < data.diffs.size(); i++)
     {
-      for (int j = 0; j < data.diffs.at(i).size(); j++)
-        stream << data.diffs.at(i).at(j) << " ";
+      for (int j = 0; j < data.diffs[i].size(); j++)
+        stream << data.diffs[i][j] << " ";
 
       stream << endl;
     }
@@ -334,8 +332,8 @@ void MainEngine::writeCoordsToFile() const
 
       for (int step = 0; step < data.coords.size(); step++)
       {
-        double x = data.coords.at(step).at(part).x;
-        double y = data.coords.at(step).at(part).y;
+        double x = data.coords[step][part].x;
+        double y = data.coords[step][part].y;
 
         stream <<"("<< x <<" "<< y <<")"<< endl;
       }
