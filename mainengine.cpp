@@ -42,7 +42,7 @@ void MainEngine::resizeData(QTextStream& stream) // ++
       data.coords[i].resize(particleAmount);
     }
 
-    for (int j = 0; j < equationAmount; j++)    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! перенести присвоение 0 в другое место!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    for (int j = 0; j < equationAmount; j++)
         data.diffs[0][j] = tmpLst[j].toDouble();
 
     for (int j = 0; j < particleAmount; j++)
@@ -135,13 +135,13 @@ void MainEngine::crtEq2Sub32(const QVector<QVector<psiCell>>& psi, const double 
     {
       const double coeff = diff / xpr1;                 // считаем коэффициент, стоящий перед интегралами при взятии проекции
 
-      for (int t = 0; t < psi[k].size(); t++)        // смотрим eq1: перебираем все theta, из суммы которых состоит текущее psi_k
+      for (int t = 0; t < psi[k].size(); t++)           // смотрим eq1: перебираем все theta, из суммы которых состоит текущее psi_k
       {
         cellDiff tmp;                                   // создаем член результирующей системы: d(theta_1)/dt = A*theta_1*theta_2 + B*theta_3 + ...
 
-        tmp.val = coeff * psi[k][t].val;          // его коэфф. - это коэфф. проекции умножить на соответствующий коефф. при theta в eq1
+        tmp.val = coeff * psi[k][t].val;                // его коэфф. - это коэфф. проекции умножить на соответствующий коефф. при theta в eq1
         tmp.indices.append(n);                          // добавляем в член номер текущего theta_n из формулы проекции
-        tmp.indices.append(psi[k][t].index);      // добавляем номер theta из уравнения eq1, соответствующего текущему psi_k
+        tmp.indices.append(psi[k][t].index);            // добавляем номер theta из уравнения eq1, соответствующего текущему psi_k
 
         rhs.diffs[count].append(tmp);                   // добавляем полученный член в модель к соответствующему уравнению du/dt = ...
       }

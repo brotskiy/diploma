@@ -14,8 +14,8 @@ void evalDiffAtStep(const typeRhs& rhs, typeData& data, const int equationAmount
                     const double h, const double L, QVector<QVector<double>>& KThetasAtStep);
 
 
-QPair<double, double> evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumber, const int step,
-                                 const double addX, const double addY, const QVector<double>& KTheta);
+void evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumber, const int step,
+                QPair<double, double>& KEq, const QVector<double>& KTheta);
 
 void evalCoordAtStep(const typeRhs& rhs, typeData& data, const int particleAmount, const int step,
                      const double h, const QVector<QVector<double>>& KThetasAtStep);
