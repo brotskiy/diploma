@@ -5,6 +5,7 @@
 
 Widget::Widget(QWidget* parent): QWidget(parent)
 {  
+  connect(this, &Widget::svImgs, &Widget::saveImages);
 }
 
 Widget::~Widget()
@@ -20,7 +21,7 @@ void Widget::setParticleAmont(int prtAm)
   if (img != nullptr) // очищаем холсты, если на них уже есть изображения
     delete img;
 
-  img = new QVector<QImage>(1 + particleAmount, QImage(1024,768,QImage::Format_ARGB32));
+  img = new QVector<QImage>(1 + particleAmount, QImage(750,750,QImage::Format_ARGB32));
 
   emit readyForComputations();
 }
@@ -29,12 +30,13 @@ void Widget::drawBorders()
 {
   for (int part = 0; part < 1 + particleAmount; part++)
   {
+    (*img)[part].fill(Qt::white);
+
     QPainter painter(&((*img)[part]));
 
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.translate(10, 10 + drw.bbnd*drw.scale);
-    painter.rotate(180);
-    painter.scale(-1,1);
+    painter.translate(750/2-static_cast<int>(drw.abnd*drw.scale/2),353+static_cast<int>(drw.bbnd*drw.scale/2));
+    painter.scale(1,-1);
 
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
     painter.drawRect(QRectF(0, 0, drw.abnd*drw.scale, drw.bbnd*drw.scale));
@@ -46,20 +48,18 @@ void Widget::drawParticles(const QVector<particle>& a)
   QPainter painterM(&((*img)[0]));
 
   painterM.setRenderHint(QPainter::Antialiasing);
-  painterM.translate(10, 10 + drw.bbnd*drw.scale);
-  painterM.rotate(180);
-  painterM.scale(-1,1);
+  painterM.translate(750/2-static_cast<int>(drw.abnd*drw.scale/2),353+static_cast<int>(drw.bbnd*drw.scale/2));
+  painterM.scale(1,-1);
 
   qsrand(1337);
 
-  for (int part = 0; part < particleAmount; part++)   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  for (int part = 0; part < particleAmount; part++)
   {
     QPainter painterP(&((*img)[1 + part]));
 
     painterP.setRenderHint(QPainter::Antialiasing);
-    painterP.translate(10, 10 + drw.bbnd*drw.scale);
-    painterP.rotate(180);
-    painterP.scale(-1,1);
+    painterP.translate(750/2-static_cast<int>(drw.abnd*drw.scale/2),353+static_cast<int>(drw.bbnd*drw.scale/2));
+    painterP.scale(1,-1);
 
     QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
     QPen pen(QBrush(color), 3, Qt::SolidLine, Qt::RoundCap);
@@ -77,30 +77,28 @@ void Widget::drawParticles(const QVector<particle>& a)
 
 void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
 {
-  for (int part = 0; part < 1 + particleAmount; part++)
-  {
-    (*img)[part] = QImage(1024,768,QImage::Format_ARGB32);
-  }
+  //for (int part = 0; part < 1 + particleAmount; part++)
+  //{
+    //(*img)[part] = QImage(750,750,QImage::Format_ARGB32);
+  //}
 
   drawBorders();
 
   QPainter painterM(&((*img)[0]));
 
   painterM.setRenderHint(QPainter::Antialiasing);
-  painterM.translate(10, 10 + drw.bbnd*drw.scale);
-  painterM.rotate(180);
-  painterM.scale(-1,1);
+  painterM.translate(750/2-static_cast<int>(drw.abnd*drw.scale/2),353+static_cast<int>(drw.bbnd*drw.scale/2));
+  painterM.scale(1,-1);
 
   qsrand(1337);
 
-  for (int part = 0; part < particleAmount; part++)         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  for (int part = 0; part < particleAmount; part++)
   {
     QPainter painterP(&((*img)[1 + part]));
 
     painterP.setRenderHint(QPainter::Antialiasing);
-    painterP.translate(10, 10 + drw.bbnd*drw.scale);
-    painterP.rotate(180);
-    painterP.scale(-1,1);
+    painterP.translate(750/2-static_cast<int>(drw.abnd*drw.scale/2),353+static_cast<int>(drw.bbnd*drw.scale/2));
+    painterP.scale(1,-1);
 
     QColor color(40 + qrand()%180, 40 + qrand()%180, 40 + qrand()%180);
     QPen pen(QBrush(color), 5, Qt::SolidLine, Qt::RoundCap);
@@ -131,5 +129,23 @@ void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
       painterM.drawLine(QPointF(xi,yi), QPointF(xii,yii));
       painterP.drawLine(QPointF(xi,yi), QPointF(xii,yii));
     }
+  }
+
+  emit svImgs();
+}
+
+void Widget::saveImages() const
+{
+  QDir dir;
+  dir.mkdir("output/trajectory");
+
+  for (int part = 0; part < 1 + particleAmount; part++)
+  {
+   // (*img)[part] = (*img)[part].convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    if (part == 0)
+      (*img)[part].save("output/trajectory/master.png", "PNG");
+    else
+      (*img)[part].save("output/trajectory/prt" + QString::number(part) + ".png", "PNG");
   }
 }

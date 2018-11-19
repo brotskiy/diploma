@@ -52,6 +52,7 @@ QPair<int,int> a;
     void fillComboBox(int prtAm);
     void setTxtEdit(const Pair& stepData);
     void activateToolBox();
+    void unblockOpen();
 
   signals:
     void wantToOpenFile(const QString& fileName);    // ++

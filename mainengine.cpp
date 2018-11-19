@@ -287,7 +287,10 @@ void MainEngine::createEqRhs(const QString& fileName)   // ++
 
 void MainEngine::writeThetasToFile() const
 {
-  QString name = "theta.txt";
+  QDir dir;
+  dir.mkdir("output");
+
+  QString name = "output/theta.txt";
   QFile outTheta(name);
 
   if (outTheta.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -308,9 +311,12 @@ void MainEngine::writeThetasToFile() const
 
 void MainEngine::writeCoordsToFile() const
 {
+  QDir dir;
+  dir.mkdir("output/particles");
+
   for (int part = 0; part < particleAmount; part++)
   {
-    QString name = "output" + QString::number(part) + ".txt";
+    QString name = "output/particles/prt" + QString::number(part) + ".txt";
     QFile output(name);
 
     if (output.open(QIODevice::WriteOnly | QIODevice::Truncate))

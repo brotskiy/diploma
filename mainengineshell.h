@@ -29,11 +29,9 @@ class MainEngineShell: public QObject
 
   void drawBorders();                               //  ++
   void rk4();                                       //  ++
-  void writeDataToFiles() const;                    //  ++
-  void drawTrajectory();                            //  ++
+  void writeDataToFiles();                    //  ++
 
   public slots:
-//    void beginWork();                                // ++
     void openInitialFile(const QString& fileName);   // ++
     void computeAll();
 
@@ -43,6 +41,7 @@ class MainEngineShell: public QObject
     void toDots(const QVector<particle>& a);             // ++
     void partAmount(int prtAm);
     void currentStep(const Pair& stepData);
+    void unblockOpen();
 
 };
 

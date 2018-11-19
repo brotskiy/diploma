@@ -33,8 +33,8 @@ void MainEngineShell::computeAll()
   drawBorders();
   emit toDots(engn->getParticlesAtStep(0));
   rk4();
+  emit toCurve(engn->getParticles());
   writeDataToFiles();
-  drawTrajectory();
 }
 
 void MainEngineShell::drawBorders()
@@ -45,9 +45,9 @@ void MainEngineShell::drawBorders()
   drw.bbnd = engn->getB();
 
   if (drw.abnd > drw.bbnd)
-    drw.scale = (1024 - 15) / drw.abnd;
+    drw.scale = (750 - 70) / drw.abnd;
   else
-    drw.scale = (768 - 70) / drw.bbnd;
+    drw.scale = (750 - 70) / drw.bbnd;
 
   emit toBorders(drw);
 }
@@ -75,13 +75,10 @@ void MainEngineShell::rk4()
   }
 }
 
-void MainEngineShell::writeDataToFiles() const
+void MainEngineShell::writeDataToFiles()
 {
   engn->writeThetasToFile();
   engn->writeCoordsToFile();
-}
 
-void MainEngineShell::drawTrajectory()
-{
-  emit toCurve(engn->getParticles());
+  emit unblockOpen();
 }

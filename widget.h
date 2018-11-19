@@ -46,6 +46,7 @@ class Widget : public QWidget
 
   public slots:
     void setParticleAmont(int prtAm);
+    void saveImages() const;
 
     void setCurrentImg(const QString& cur)
     {
@@ -77,10 +78,10 @@ class Widget : public QWidget
     }
 
   signals:
+    void svImgs();
     void readyForComputations();   // Если очень много точек, то массив может не успеть создасться до того,
                                    // как начнут приходить первые запросы на отрисовку. Поэтому этот сигнал
                                    // скажет движку начинать только после того, как "холсты" будут готовы.
-
 };
 
 #endif // WIDGET_H

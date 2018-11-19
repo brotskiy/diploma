@@ -47,6 +47,8 @@ void MainWindow::slotOpen()
 
   if (name != "")
   {
+    menuBar->actions()[0]->menu()->actions()[0]->setEnabled(false);
+
     if (openedFirstTime)
     {
       openedFirstTime = false;
@@ -64,6 +66,7 @@ void MainWindow::slotOpen()
       connect(this, SIGNAL(partAmount(int)), this->centralWidget(), SLOT(setParticleAmont(int)));
       connect(this->centralWidget(), SIGNAL(readyForComputations()), this, SLOT(activateToolBox()));
       connect(this, SIGNAL(readyForComputations()), engnShell, SLOT(computeAll()));
+      connect(engnShell, &MainEngineShell::unblockOpen, this, &MainWindow::unblockOpen);
 
       connect(engnShell, SIGNAL(currentStep(const Pair&)), this, SLOT(setTxtEdit(const Pair&)));
 
@@ -79,6 +82,11 @@ void MainWindow::slotOpen()
 
     emit wantToOpenFile(name);
   }
+}
+
+void MainWindow::unblockOpen()
+{
+  menuBar->actions()[0]->menu()->actions()[0]->setEnabled(true);
 }
 
 void MainWindow::fillComboBox(int prtAm)
@@ -110,7 +118,7 @@ MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
   qRegisterMetaType<QVector<particle>>();
   qRegisterMetaType<Pair>();
 
-  resize(1024, 768);
+  setFixedSize(750, 750);
 
   createMenuBar(this);
 
