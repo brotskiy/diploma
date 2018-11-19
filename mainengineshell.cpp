@@ -31,6 +31,7 @@ void MainEngineShell::openInitialFile(const QString& fileName)
 void MainEngineShell::computeAll()
 {
   drawBorders();
+  emit toDots(engn->getParticlesAtStep(0));
   rk4();
   writeDataToFiles();
   drawTrajectory();
@@ -70,8 +71,6 @@ void MainEngineShell::rk4()
     {
       emit toDots(engn->getParticlesAtStep(step));
       emit currentStep(Pair(step, ms));
-
-      // qDebug() << sizeof(QTime)  << ms;
     }
   }
 }

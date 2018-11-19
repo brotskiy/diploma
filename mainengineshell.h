@@ -38,7 +38,7 @@ class MainEngineShell: public QObject
     void computeAll();
 
   signals:
-    void toBorders(drawing_struct a);                   // ++
+    void toBorders(const drawing_struct& a);                   // ++
     void toCurve(const QVector<QVector<particle>>& a);  // ++
     void toDots(const QVector<particle>& a);             // ++
     void partAmount(int prtAm);

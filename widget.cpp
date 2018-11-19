@@ -17,6 +17,9 @@ void Widget::setParticleAmont(int prtAm)
 {
   particleAmount = prtAm;
 
+  if (img != nullptr) // очищаем холсты, если на них уже есть изображения
+    delete img;
+
   img = new QVector<QImage>(1 + particleAmount, QImage(1024,768,QImage::Format_ARGB32));
 
   emit readyForComputations();

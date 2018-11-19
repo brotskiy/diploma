@@ -2,7 +2,7 @@
 
 #include <QtWidgets>
 
-void MainEngine::readConsts(QTextStream& stream)
+void MainEngine::readConsts(QTextStream& stream)  // ++
 {
   QString tmp = stream.readLine();
   QStringList tmpLst = tmp.split(" ");
@@ -22,9 +22,11 @@ void MainEngine::readConsts(QTextStream& stream)
   L = stream.readLine().toDouble();                // Число Рэлея
 }
 
-void MainEngine::resizeData(QTextStream& stream)
+void MainEngine::resizeData(QTextStream& stream) // ++
 {
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    for (int i = 0 ; i < 4; i++)
+      KThetasAtStep[i].resize(equationAmount);
+
     data.time.resize(1 + stepAmount);
     data.time[0] = tbegin;
 
@@ -37,15 +39,11 @@ void MainEngine::resizeData(QTextStream& stream)
     for (int i = 0; i < 1 + stepAmount; i++)
     {
       data.diffs[i].resize(equationAmount);
-
-      for (int j = 0; j < equationAmount; j++)
-        if (i == 0)
-          data.diffs[i][j] = tmpLst[i].toDouble();
-        else
-          data.diffs[i][j] = 0;
-
       data.coords[i].resize(particleAmount);
     }
+
+    for (int j = 0; j < equationAmount; j++)    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! перенести присвоение 0 в другое место!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        data.diffs[0][j] = tmpLst[j].toDouble();
 
     for (int j = 0; j < particleAmount; j++)
     {
@@ -55,10 +53,9 @@ void MainEngine::resizeData(QTextStream& stream)
       data.coords[0][j].x = tmpLst[0].toDouble();
       data.coords[0][j].y = tmpLst[1].toDouble();
     }
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
-void MainEngine::readFromFile(const QString& fileName)
+void MainEngine::readFromFile(const QString& fileName) // ++
 {
   QFile file(fileName);
 
@@ -66,7 +63,7 @@ void MainEngine::readFromFile(const QString& fileName)
   {
     QTextStream stream(&file);
 
-    readConsts(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    readConsts(stream);
 
     for (int i = 0; i <equationAmount; i++)
     {
@@ -77,33 +74,19 @@ void MainEngine::readFromFile(const QString& fileName)
       rhs.diffs.append(tmpVec);
     }
 
-    QVector<cellCoord> tmpVec;
-
     QString tmp = stream.readLine();
-    tmpVec = proccessOneCoord(tmp);
-    rhs.eqX = tmpVec;
+    rhs.eqX = proccessOneCoord(tmp);
 
     tmp = stream.readLine();
-    tmpVec = proccessOneCoord(tmp);
-    rhs.eqY = tmpVec;
+    rhs.eqY = proccessOneCoord(tmp);
 
-    resizeData(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-       // for (int i = 0; i < 1 + stepAmount; i++)
-       // {
-         // qDebug() << i << data.diffs.at(i);
-
-         // for (int j = 0; j < particleAmount; j++)
-           // qDebug() << i << j << data.coords.at(i).at(j).x << data.coords.at(i).at(j).y;
-
-         // qDebug() << "======================================";
-        //}
+    resizeData(stream);
 
     file.close();
   }
 }
 
-void MainEngine::crtBas(QVector<basisCell>& basis)
+void MainEngine::crtBas(QVector<basisCell>& basis)    // ++
 {
   int cntr = 0;
 
@@ -116,7 +99,7 @@ void MainEngine::crtBas(QVector<basisCell>& basis)
     }
 }
 
-void MainEngine::crtEq1(const QVector<basisCell>& basis, QVector<QVector<psiCell>>& psi)
+void MainEngine::crtEq1(const QVector<basisCell>& basis, QVector<QVector<psiCell>>& psi)    // ++
 {
   for (int k = 0; k < equationAmount; k++)
   {
@@ -234,8 +217,11 @@ void MainEngine::crtEq2(const QVector<basisCell>& basis, const QVector<QVector<p
   }
 }
 
-void MainEngine::crtCoords(const QVector<basisCell>& basis, const QVector<QVector<psiCell>>& psi)
+void MainEngine::crtCoords(const QVector<basisCell>& basis, const QVector<QVector<psiCell>>& psi)  // ++
 {
+  rhs.eqX.clear();       // очистка, если в них хранится мусор с прошлого раза!!!!!!
+  rhs.eqY.clear();
+
   for (int k = 0; k < equationAmount; k++)
   {
     const int i = basis[k].i;
@@ -243,25 +229,36 @@ void MainEngine::crtCoords(const QVector<basisCell>& basis, const QVector<QVecto
 
     for (int t = 0; t < psi[k].size(); t++)
     {
-      cellCoord tmpx, tmpy;
+      cellCoord tmp;
 
-      tmpx.val = -1 * psi[k][t].val * 2/(sqrt(abnd*bbnd)) * j*MY_PI/bbnd;
-      tmpx.valSin = i * MY_PI / abnd;
-      tmpx.valCos = j * MY_PI / bbnd;
-      tmpx.index = psi[k][t].index;
+      double val = -1 * psi[k][t].val * 2/(sqrt(abnd*bbnd)) * j*MY_PI/bbnd;
 
-      tmpy.val = psi[k][t].val * 2/(sqrt(abnd*bbnd)) * i*MY_PI/abnd;
-      tmpy.valCos = i * MY_PI / abnd;
-      tmpy.valSin = j * MY_PI / bbnd;
-      tmpy.index = psi[k][t].index;
+      if (fabs(val) > MY_ZERO)
+      {
+        tmp.val = val;
+        tmp.valSin = i * MY_PI / abnd;
+        tmp.valCos = j * MY_PI / bbnd;
+        tmp.index = psi[k][t].index;
 
-      rhs.eqX.append(tmpx);
-      rhs.eqY.append(tmpy);
+        rhs.eqX.append(tmp);
+      }
+
+      val = psi[k][t].val * 2/(sqrt(abnd*bbnd)) * i*MY_PI/abnd;
+
+      if (fabs(val) > MY_ZERO)
+      {
+        tmp.val = val;
+        tmp.valCos = i * MY_PI / abnd;
+        tmp.valSin = j * MY_PI / bbnd;
+        tmp.index = psi[k][t].index;
+
+        rhs.eqY.append(tmp);
+      }
     }
   }
 }
 
-void MainEngine::createEqRhs(const QString& fileName)
+void MainEngine::createEqRhs(const QString& fileName)   // ++
 {
   QFile file(fileName);
 
@@ -269,18 +266,8 @@ void MainEngine::createEqRhs(const QString& fileName)
   {
     QTextStream stream(&file);
 
-    readConsts(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    resizeData(stream); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-       //for (int i = 0; i < 1 + stepAmount; i++)
-        //{
-           // qDebug() << i << data.diffs.at(i);
-
-            //for (int j = 0; j < particleAmount; j++)
-            //qDebug() << i << j << data.coords.at(i).at(j).x << data.coords.at(i).at(j).y;
-
-            //qDebug() << "======================================";
-        //}
+    readConsts(stream);
+    resizeData(stream);
 
     // ---------- создание системы ---------------
     QVector<basisCell> basis(equationAmount);
@@ -289,7 +276,7 @@ void MainEngine::createEqRhs(const QString& fileName)
     QVector<QVector<psiCell>> psi(equationAmount);
     crtEq1(basis, psi);
 
-    rhs.diffs.resize(equationAmount);
+    rhs.diffs.resize(equationAmount);      // ресайз аннулирует то, что могло было быть записано в нем заранее
     crtEq2(basis, psi);
 
     crtCoords(basis, psi);
@@ -345,5 +332,5 @@ void MainEngine::writeCoordsToFile() const
 
 void MainEngine::rk4_step(const double h, const int step)
 {
-  rk4step(rhs, data, tbegin, h, step, equationAmount, particleAmount, L);
+  rk4step(rhs, data, tbegin, h, step, equationAmount, particleAmount, L, KThetasAtStep);
 }

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFile>
 #include <QTextStream>
+#include <QVector>
 
 #include "input.h"
 #include "eq_rhs_creation.h"
@@ -28,6 +29,9 @@ class MainEngine: public QObject
 
     typeRhs rhs;                         // правые части системы
     typeData data;                       // значения всех искомых величин задачи
+
+    QVector<QVector<double>> KThetasAtStep = QVector<QVector<double>>(4); // четыре коэффициента K1, K2, K3, K4
+                                                                          // для метода Рунге-Кутты
 
     void crtBas(QVector<basisCell>& basis);
     void crtEq1(const QVector<basisCell>& basis, QVector<QVector<psiCell>>& psi);

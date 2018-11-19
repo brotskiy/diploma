@@ -34,6 +34,8 @@ QPair<int,int> a;
     MainEngineShell* engnShell;
     QThread* thread;
 
+    bool openedFirstTime = true;
+
     QMenuBar* menuBar;
     QToolBar* toolBar;
     QAction* txtEdit;

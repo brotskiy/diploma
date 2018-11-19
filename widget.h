@@ -57,7 +57,7 @@ class Widget : public QWidget
       update();
     }
 
-    void brdr(drawing_struct a)
+    void brdr(const drawing_struct& a)
     {
       drw = a;
       drawBorders();

@@ -35,7 +35,7 @@ void MainWindow::createConnections()
   QAction* button = menuBar->actions().at(0)->menu()->actions().at(0);   // Open
   connect(button, SIGNAL(triggered(bool)), this, SLOT(slotOpen()));
 
-  button = menuBar->actions().at(0)->menu()->actions().at(2);
+  button = menuBar->actions().at(0)->menu()->actions().at(2);            // Exit
   connect(button, SIGNAL(triggered(bool)), qApp, SLOT(quit()));
 
   connect(comboBox, SIGNAL(currentTextChanged(const QString&)), this->centralWidget(), SLOT(setCurrentImg(const QString&)));
@@ -47,23 +47,36 @@ void MainWindow::slotOpen()
 
   if (name != "")
   {
-    thread = new QThread;              // инициализировали поток, который отвечает за реальную работу
-    engnShell = new MainEngineShell;   // инициализировали начинку
-    engnShell->moveToThread(thread);   // поместили начинку в рабочий поток
+    if (openedFirstTime)
+    {
+      openedFirstTime = false;
 
-    connect(this, SIGNAL(wantToOpenFile(const QString&)), engnShell, SLOT(openInitialFile(const QString&)));
-    connect(engnShell, SIGNAL(toBorders(drawing_struct)), this->centralWidget(), SLOT(brdr(drawing_struct)));
-    connect(engnShell, SIGNAL(toCurve(const QVector<QVector<particle>>&)), this->centralWidget(), SLOT(crv(const QVector<QVector<particle>>&)));
-    connect(engnShell, SIGNAL(toDots(const QVector<particle>&)), this->centralWidget(), SLOT(prtcls(const QVector<particle>&)));
+      thread = new QThread;              // инициализировали поток, который отвечает за реальную работу
+      engnShell = new MainEngineShell;   // инициализировали начинку
+      engnShell->moveToThread(thread);   // поместили начинку в рабочий поток
 
-    connect(engnShell, SIGNAL(partAmount(int)), this, SLOT(fillComboBox(int)));
-    connect(this, SIGNAL(partAmount(int)), this->centralWidget(), SLOT(setParticleAmont(int)));
-    connect(this->centralWidget(), SIGNAL(readyForComputations()), this, SLOT(activateToolBox()));
-    connect(this, SIGNAL(readyForComputations()), engnShell, SLOT(computeAll()));
+      connect(this, SIGNAL(wantToOpenFile(const QString&)), engnShell, SLOT(openInitialFile(const QString&)));
+      connect(engnShell, SIGNAL(toBorders(const drawing_struct&)), this->centralWidget(), SLOT(brdr(const drawing_struct&)));
+      connect(engnShell, SIGNAL(toCurve(const QVector<QVector<particle>>&)), this->centralWidget(), SLOT(crv(const QVector<QVector<particle>>&)));
+      connect(engnShell, SIGNAL(toDots(const QVector<particle>&)), this->centralWidget(), SLOT(prtcls(const QVector<particle>&)));
 
-    connect(engnShell, SIGNAL(currentStep(const Pair&)), this, SLOT(setTxtEdit(const Pair&)));
+      connect(engnShell, SIGNAL(partAmount(int)), this, SLOT(fillComboBox(int)));
+      connect(this, SIGNAL(partAmount(int)), this->centralWidget(), SLOT(setParticleAmont(int)));
+      connect(this->centralWidget(), SIGNAL(readyForComputations()), this, SLOT(activateToolBox()));
+      connect(this, SIGNAL(readyForComputations()), engnShell, SLOT(computeAll()));
 
-    thread->start();
+      connect(engnShell, SIGNAL(currentStep(const Pair&)), this, SLOT(setTxtEdit(const Pair&)));
+
+      thread->start();
+    }
+    else
+    {
+      comboBox->clear();
+      comboBox->addItem("MASTER");
+      comboBox->setEnabled(false);
+      txtEdit->setText(" ");
+    }
+
     emit wantToOpenFile(name);
   }
 }
