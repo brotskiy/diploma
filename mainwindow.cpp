@@ -126,4 +126,9 @@ MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
   setCentralWidget(scene);
 
   createConnections();
+
+//#ifdef _OPENMP
+ // qDebug() << "supported!";
+//#endif
+
 }

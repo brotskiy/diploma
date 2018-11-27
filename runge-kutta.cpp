@@ -6,32 +6,33 @@
 void evalDiffK(const typeRhs& rhs, typeData& data, const int equationAmount, const int step, const double L,
                const int KNum, const int addNum, const double coeffK, const double coeffKResult, QVector<QVector<double>>& KThetasAtStep)
 {
-  const QVector<double>& dataDiffAtPrevStep = data.diffs.at(step-1);             // значения всех theta с предыдущего шага
+  const QVector<double>& dataDiffAtPrevStep = data.diffs.at(step-1);     // значения всех theta с предыдущего шага
 
-  for (int eqNum = 0; eqNum < equationAmount; eqNum++)       // перебираем все уравнения системы
-  {  
-    const QVector<cellDiff>& rhsOneEq = rhs.diffs[eqNum];    // правая часть одного уравнения с соответствующим номером
-
-    KThetasAtStep[KNum][eqNum] = 0;                          // очистили мусор для накопления суммы
-
-    for (int i = 0; i < rhsOneEq.size(); i++)                // перебираем все слагаемые в правой части некого уравнения системы
+#pragma omp parallel for default(shared)
+    for (int eqNum = 0; eqNum < equationAmount; eqNum++)       // перебираем все уравнения системы
     {
-      double tmp = 1;
+      const QVector<cellDiff>& rhsOneEq = rhs.diffs[eqNum];    // правая часть одного уравнения с соответствующим номером
+
+      KThetasAtStep[KNum][eqNum] = 0;                          // очистили мусор для накопления суммы
+
+      for (int i = 0; i < rhsOneEq.size(); i++)                // перебираем все слагаемые в правой части некого уравнения системы
+      {
+        double tmp = 1;
                                                              // произведение всех theta (+добавка), из которых состоит слагаемое
-      for (int j = 0; j < rhsOneEq[i].indices.size(); j++)
-        tmp *= (dataDiffAtPrevStep[rhsOneEq[i].indices[j]] + coeffK * KThetasAtStep[addNum][rhsOneEq[i].indices[j]]);
+        for (int j = 0; j < rhsOneEq[i].indices.size(); j++)
+          tmp *= (dataDiffAtPrevStep[rhsOneEq[i].indices[j]] + coeffK * KThetasAtStep[addNum][rhsOneEq[i].indices[j]]);
 
-      if (rhsOneEq[i].hasL)                                  // если слагаемое имеет число Рэлея
-        tmp *= L;                                            // то умножаем на него
+        if (rhsOneEq[i].hasL)                                  // если слагаемое имеет число Рэлея
+          tmp *= L;                                            // то умножаем на него
 
-      KThetasAtStep[KNum][eqNum] += tmp * rhsOneEq[i].val;   // не забываем умножить на число-коэффициент и накапливаем слагаемые дальше
+        KThetasAtStep[KNum][eqNum] += tmp * rhsOneEq[i].val;   // не забываем умножить на число-коэффициент и накапливаем слагаемые дальше
+      }
+
+      if ( KNum == 1-1)      // Если считается коэффициент K1 (в С++ нумерация от 0)
+        data.diffs[step][eqNum] = dataDiffAtPrevStep[eqNum] + coeffKResult * KThetasAtStep[KNum][eqNum];
+      else
+        data.diffs[step][eqNum] += coeffKResult * KThetasAtStep[KNum][eqNum];
     }
-
-    if ( KNum == 1-1)
-      data.diffs[step][eqNum] = dataDiffAtPrevStep[eqNum] + coeffKResult * KThetasAtStep[KNum][eqNum];
-    else
-      data.diffs[step][eqNum] += coeffKResult * KThetasAtStep[KNum][eqNum];
-  } 
 }
 
 void evalDiffAtStep(const typeRhs& rhs, typeData& data, const int equationAmount, const int step,
@@ -61,6 +62,7 @@ void evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumb
   double tmpX = 0;
   double tmpY = 0;
 
+#pragma omp parallel for default(shared) reduction (+: tmpX)
   for (int i = 0; i < rhsEqX.size(); i++)   // идем по всем слагаемым уравнения для X
   {
     const double tmpsin = sin(rhsEqX[i].valSin * (dataCoordAtStep[particleNumber].x + KEq.first));            // выражение внутри синуса и косинуса
@@ -68,6 +70,7 @@ void evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumb
     tmpX += rhsEqX[i].val * (dataDiffAtStep[rhsEqX[i].index] + KTheta[rhsEqX[i].index]) * tmpsin * tmpcos;    // накапливаем, theta + добавка
   }
 
+#pragma omp parallel for default(shared) reduction(+: tmpY)
   for (int i = 0; i < rhsEqY.size(); i++)   // идем по всем слагаемым уравнения для Y
   {
     const double tmpcos = cos(rhsEqY[i].valCos * (dataCoordAtStep[particleNumber].x + KEq.first));

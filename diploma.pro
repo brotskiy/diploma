@@ -47,3 +47,8 @@ HEADERS += \
     eq_rhs_creation.h \
     drawing_struct.h \
     mainengineshell.h
+
+QMAKE_CXXFLAGS+= -fopenmp
+QMAKE_LFLAGS += -fopenmp
+
+LIBS += -lgomp -lpthread
