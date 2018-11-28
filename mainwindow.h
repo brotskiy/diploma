@@ -17,6 +17,8 @@
 #include "mainengine.h"
 #include "mainengineshell.h"
 
+#include "dialog.h"
+
 typedef QPair<int, int> Pair;
 
 Q_DECLARE_METATYPE(drawing_struct)
@@ -25,16 +27,17 @@ Q_DECLARE_METATYPE(QVector<particle>)
 Q_DECLARE_METATYPE(QVector<QVector<particle>>)
 Q_DECLARE_METATYPE(Pair)
 
-
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
-QPair<int,int> a;
+
   private:
     MainEngineShell* engnShell;
     QThread* thread;
 
     bool openedFirstTime = true;
+
+    QString thetasFileName;
 
     QMenuBar* menuBar;
     QToolBar* toolBar;
@@ -53,6 +56,9 @@ QPair<int,int> a;
     void setTxtEdit(const Pair& stepData);
     void activateToolBox();
     void unblockOpen();
+
+    void dialogReadThetasFromFile();
+    void readThetasFromFile(const QString& axs);
 
   signals:
     void wantToOpenFile(const QString& fileName);    // ++

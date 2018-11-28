@@ -77,11 +77,6 @@ void Widget::drawParticles(const QVector<particle>& a)
 
 void Widget::drawTrajectory(const QVector<QVector<particle> >& a)
 {
-  //for (int part = 0; part < 1 + particleAmount; part++)
-  //{
-    //(*img)[part] = QImage(750,750,QImage::Format_ARGB32);
-  //}
-
   drawBorders();
 
   QPainter painterM(&((*img)[0]));
@@ -141,8 +136,6 @@ void Widget::saveImages() const
 
   for (int part = 0; part < 1 + particleAmount; part++)
   {
-   // (*img)[part] = (*img)[part].convertToFormat(QImage::Format_ARGB32_Premultiplied);
-
     if (part == 0)
       (*img)[part].save("output/trajectory/master.png", "PNG");
     else

@@ -4,17 +4,20 @@ void MainWindow::createMenuBar(MainWindow* parent) // OK
 {
   menuBar = new QMenuBar(parent);
   QMenu* menuFile = new QMenu("File", menuBar);
+  QMenu* menuTheta = new QMenu("Theta", menuBar);
 
-  menuBar->addAction(menuFile->menuAction());
+  menuBar->addAction(menuFile->menuAction());    // 0
+  menuBar->addAction(menuTheta->menuAction());   // 1
 
   menuFile->addAction("Open");   // 0
   menuFile->addSeparator();      // 1
   menuFile->addAction("Exit");   // 2
 
+  menuTheta->addAction("Read from file");   // 0
+
   toolBar = new QToolBar(parent);
   comboBox = new QComboBox(toolBar);
   txtEdit = new QAction(toolBar);
-
 
   toolBar->setMovable(false);
   toolBar->addWidget(comboBox);
@@ -38,7 +41,90 @@ void MainWindow::createConnections()
   button = menuBar->actions().at(0)->menu()->actions().at(2);            // Exit
   connect(button, SIGNAL(triggered(bool)), qApp, SLOT(quit()));
 
+  button = menuBar->actions().at(1)->menu()->actions().at(0);           // Read Thetas from File
+  connect(button, &QAction::triggered, this, &MainWindow::dialogReadThetasFromFile);
+
   connect(comboBox, SIGNAL(currentTextChanged(const QString&)), this->centralWidget(), SLOT(setCurrentImg(const QString&)));
+
+}
+
+void MainWindow::readThetasFromFile(const QString& axs)
+{
+  if ((axs != "") && axs.contains(QRegExp("^\\d+\\s\\d+$")))
+  {
+    const int numX = axs.split(" ").at(0).toInt();
+    const int numY = axs.split(" ").at(1).toInt();
+
+    QFile file(thetasFileName);
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+      QTextStream stream(&file);
+      QString tmp = stream.readLine();
+
+      const int eqNum = tmp.split(" ", QString::SkipEmptyParts).size();
+
+      if (0 <= numX && numX < eqNum && 0 <= numY && numY < eqNum)
+      {
+        QImage img(1980, 1980, QImage::Format_ARGB32);
+        img.fill(Qt::white);
+
+        QPainter pntr(&img);
+        pntr.setRenderHint(QPainter::Antialiasing);
+        pntr.translate(-500, 1400);
+        pntr.scale(1,-1);
+        pntr.setPen(QPen(Qt::blue, 1, Qt::SolidLine, Qt::FlatCap));
+
+        const int scaleX = 90;
+        const int scaleY = 60;
+
+
+        qreal xi = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();
+        qreal yi = scaleY * tmp.section(" ", numY, numY, QString::SectionSkipEmpty).toDouble();
+
+        int i = 0;
+        while (!stream.atEnd())  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        {
+          i+=1;
+          if (i % 5000 == 0)
+          qDebug() << i << xi/scaleX << yi/scaleY << " | " << xi << yi;
+
+          tmp = stream.readLine();
+
+          qreal xii = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();
+          qreal yii = scaleY * tmp.section(" ", numY, numY, QString::SectionSkipEmpty).toDouble();
+
+          if (i > 120000)
+            pntr.drawLine(QPointF(xi,yi), QPointF(xii,yii));
+
+          xi = xii;
+          yi = yii;
+        }
+
+        QLabel* wdgt = new QLabel(this, Qt::Window);
+        wdgt->setAttribute(Qt::WA_DeleteOnClose);
+        //wdgt->setFixedSize(750, 750);
+        wdgt->setPixmap(QPixmap::fromImage(img));
+        wdgt->show();
+
+      }
+      file.close();
+    }
+  }
+}
+
+void MainWindow::dialogReadThetasFromFile()
+{
+  QString name = QFileDialog::getOpenFileName(this, "Explorer", "", "Text files(*.txt)");
+
+  if (name.contains("theta.txt"))
+  {
+    thetasFileName = name;
+
+    Dialog* dialog = new Dialog(this);
+    connect(dialog, &Dialog::Axes, this, &MainWindow::readThetasFromFile);
+    dialog->exec();
+  }
 }
 
 void MainWindow::slotOpen()
@@ -126,9 +212,4 @@ MainWindow::MainWindow(QWidget* parent): QMainWindow(parent)
   setCentralWidget(scene);
 
   createConnections();
-
-//#ifdef _OPENMP
- // qDebug() << "supported!";
-//#endif
-
 }

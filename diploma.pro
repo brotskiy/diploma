@@ -31,7 +31,8 @@ SOURCES += \
     mainengine.cpp \
     widget.cpp \
     eq_rhs_creation.cpp \
-    mainengineshell.cpp
+    mainengineshell.cpp \
+    dialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -46,7 +47,8 @@ HEADERS += \
     widget.h \
     eq_rhs_creation.h \
     drawing_struct.h \
-    mainengineshell.h
+    mainengineshell.h \
+    dialog.h
 
 QMAKE_CXXFLAGS+= -fopenmp
 QMAKE_LFLAGS += -fopenmp
