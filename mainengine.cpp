@@ -285,7 +285,7 @@ void MainEngine::createEqRhs(const QString& fileName)   // ++
   }
 }
 
-void MainEngine::writeThetasToFile() const
+void MainEngine::writeThetasToFile(QIODevice::OpenMode mode, const int strtNum) const
 {
   QDir dir;
   dir.mkdir("output");
@@ -293,11 +293,11 @@ void MainEngine::writeThetasToFile() const
   QString name = "output/theta.txt";
   QFile outTheta(name);
 
-  if (outTheta.open(QIODevice::WriteOnly | QIODevice::Truncate))
+  if (outTheta.open(QIODevice::WriteOnly | mode)) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   {
     QTextStream stream(&outTheta);
 
-    for (int i = 0; i < data.diffs.size(); i++)
+    for (int i = strtNum; i < data.diffs.size(); i++) // strtNum вместо 0 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     {
       for (int j = 0; j < data.diffs[i].size(); j++)
         stream << data.diffs[i][j] << " ";
@@ -309,7 +309,7 @@ void MainEngine::writeThetasToFile() const
   }
 }
 
-void MainEngine::writeCoordsToFile() const
+void MainEngine::writeCoordsToFile(QIODevice::OpenMode mode, const int strtNum) const
 {
   QDir dir;
   dir.mkdir("output/particles");
@@ -319,20 +319,35 @@ void MainEngine::writeCoordsToFile() const
     QString name = "output/particles/prt" + QString::number(part) + ".txt";
     QFile output(name);
 
-    if (output.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    if (output.open(QIODevice::WriteOnly | mode)) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     {
       QTextStream stream(&output);
 
-      for (int step = 0; step < data.coords.size(); step++)
+      for (int step = strtNum; step < data.coords.size(); step++)  // strtNum вместо 0 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       {
         double x = data.coords[step][part].x;
         double y = data.coords[step][part].y;
 
         stream <<"("<< x <<" "<< y <<")"<< endl;
       }
-      stream << endl;
+
       output.close();
     }
+  }
+}
+
+void MainEngine::cycleThetas() // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+{
+  for (int j = 0; j < data.diffs[0].size(); j++)
+    data.diffs[0][j] = data.diffs[data.diffs.size()-1][j];
+}
+
+void MainEngine::cycleCoords()  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+{
+  for (int part = 0; part < particleAmount; part++)
+  {
+    data.coords[0][part].x = data.coords[data.coords.size()-1][part].x;
+    data.coords[0][part].y = data.coords[data.coords.size()-1][part].y;
   }
 }
 

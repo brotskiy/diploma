@@ -71,12 +71,12 @@ void MainWindow::readThetasFromFile(const QString& axs)
 
         QPainter pntr(&img);
         pntr.setRenderHint(QPainter::Antialiasing);
-        pntr.translate(-500, 1400);
+        pntr.translate(1390, 590);
         pntr.scale(1,-1);
         pntr.setPen(QPen(Qt::blue, 1, Qt::SolidLine, Qt::FlatCap));
 
-        const int scaleX = 90;
-        const int scaleY = 60;
+        const int scaleX = 7000000;
+        const int scaleY = 4000;
 
 
         qreal xi = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();

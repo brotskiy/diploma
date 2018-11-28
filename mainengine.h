@@ -56,8 +56,11 @@ class MainEngine: public QObject
     void readFromFile(const QString& fileName);
     void createEqRhs(const QString& fileName);
     void rk4_step(const double h, const int step);
-    void writeCoordsToFile() const;
-    void writeThetasToFile() const;
+    void writeCoordsToFile(QIODevice::OpenMode mode, const int strtNum) const;
+    void writeThetasToFile(QIODevice::OpenMode mode, const int strtNum) const;
+
+    void cycleThetas(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    void cycleCoords(); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     const QVector<QVector<particle>>& getParticles() const { return data.coords; }
     const QVector<particle>& getParticlesAtStep(int step) const { return data.coords.at(step); }

@@ -1,6 +1,7 @@
 #include "mainengineshell.h"
 
 #include <QtWidgets>
+#include <QFile>
 
 MainEngineShell::MainEngineShell(QObject* parent) : QObject(parent)
 {
@@ -60,11 +61,17 @@ void MainEngineShell::rk4()
 
   const double h = (tend - tbegin)/stepAmount;    // приращение времени
 
+const int REPEAT_AMOUNT = 2; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+for (int repeat = 0; repeat < REPEAT_AMOUNT; repeat++)
+{
+
   for (int step = 1; step <= stepAmount; step++)      // идем по шагам
   {
     QTime t;
     t.start();
-        engn->rk4_step(h, step);
+
+    engn->rk4_step(h, step);
+
     int ms = t.elapsed();
 
     if (step % 250 == 0)
@@ -73,12 +80,34 @@ void MainEngineShell::rk4()
       emit currentStep(Pair(step, ms));
     }
   }
-}
+
+  if (repeat == 0)
+  {
+    engn->writeThetasToFile(QIODevice::Truncate, 0);
+    engn->writeCoordsToFile(QIODevice::Truncate, 0);
+  }
+  else
+  {
+    engn->writeThetasToFile(QIODevice::Append, 1);  // 1 чтобы строка не повторялась 2 раза подряд при записи в файл.
+    engn->writeCoordsToFile(QIODevice::Append, 1);  // т.к. она уже записана последней на прошлом репите.
+  }
+
+  if (repeat != REPEAT_AMOUNT - 1)
+  {
+    engn->cycleThetas();
+    engn->cycleCoords();
+    // надо еще сделать cycle time просто так !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  }
+
+} // repeat
+
+
+} // конец функции
 
 void MainEngineShell::writeDataToFiles()
 {
-  engn->writeThetasToFile();
-  engn->writeCoordsToFile();
+  //engn->writeThetasToFile();
+  //engn->writeCoordsToFile();
 
   emit unblockOpen();
 }
