@@ -66,35 +66,36 @@ void MainWindow::readThetasFromFile(const QString& axs)
 
       if (0 <= numX && numX < eqNum && 0 <= numY && numY < eqNum)
       {
-        QImage img(1980, 1980, QImage::Format_ARGB32);
+        QImage img(1920, 1080, QImage::Format_ARGB32);
         img.fill(Qt::white);
 
         QPainter pntr(&img);
         pntr.setRenderHint(QPainter::Antialiasing);
-        pntr.translate(1390, 590);
+        pntr.translate(1650, -300);
         pntr.scale(1,-1);
         pntr.setPen(QPen(Qt::blue, 1, Qt::SolidLine, Qt::FlatCap));
 
-        const int scaleX = 7000000;
-        const int scaleY = 4000;
-
+        const int scaleX = 10000000;
+        const int scaleY = 7000;
 
         qreal xi = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();
         qreal yi = scaleY * tmp.section(" ", numY, numY, QString::SectionSkipEmpty).toDouble();
 
+       // pntr.drawLine(QPointF(0,0), QPointF(50,50));
+
         int i = 0;
-        while (!stream.atEnd())  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        while (!stream.atEnd())
         {
           i+=1;
-          if (i % 5000 == 0)
-          qDebug() << i << xi/scaleX << yi/scaleY << " | " << xi << yi;
+          if (i % 20000 == 0)
+            qDebug() << i << xi/scaleX << yi/scaleY << " | " << xi << yi; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
           tmp = stream.readLine();
 
           qreal xii = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();
           qreal yii = scaleY * tmp.section(" ", numY, numY, QString::SectionSkipEmpty).toDouble();
 
-          if (i > 120000)
+          if (i > 120000) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             pntr.drawLine(QPointF(xi,yi), QPointF(xii,yii));
 
           xi = xii;
@@ -103,7 +104,7 @@ void MainWindow::readThetasFromFile(const QString& axs)
 
         QLabel* wdgt = new QLabel(this, Qt::Window);
         wdgt->setAttribute(Qt::WA_DeleteOnClose);
-        //wdgt->setFixedSize(750, 750);
+        wdgt->setGeometry(50,50, 1800, 900);
         wdgt->setPixmap(QPixmap::fromImage(img));
         wdgt->show();
 

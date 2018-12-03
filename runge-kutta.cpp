@@ -47,7 +47,7 @@ void evalDiffAtStep(const typeRhs& rhs, typeData& data, const int equationAmount
 
   evalDiffK(rhs, data, equationAmount, step, L, 4-1, 3-1, h, h/6, KThetasAtStep);
 
-//  double tmp = data.diffs.at(step-1).at(eqNum) + h/6*(K1.at(eqNum) + 2*K2.at(eqNum) + 2*K3.at(eqNum) + K4.at(eqNum)); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  double tmp = data.diffs.at(step-1).at(eqNum) + h/6*(K1.at(eqNum) + 2*K2.at(eqNum) + 2*K3.at(eqNum) + K4.at(eqNum)); !!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 void evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumber, const int step,
@@ -62,20 +62,23 @@ void evalCoordK(const typeRhs& rhs, const typeData& data, const int particleNumb
   double tmpX = 0;
   double tmpY = 0;
 
-#pragma omp parallel for default(shared) reduction (+: tmpX)
-  for (int i = 0; i < rhsEqX.size(); i++)   // идем по всем слагаемым уравнения для X
+  #pragma omp parallel default(shared)
   {
-    const double tmpsin = sin(rhsEqX[i].valSin * (dataCoordAtStep[particleNumber].x + KEq.first));            // выражение внутри синуса и косинуса
-    const double tmpcos = cos(rhsEqX[i].valCos * (dataCoordAtStep[particleNumber].y + KEq.second));
-    tmpX += rhsEqX[i].val * (dataDiffAtStep[rhsEqX[i].index] + KTheta[rhsEqX[i].index]) * tmpsin * tmpcos;    // накапливаем, theta + добавка
-  }
+    #pragma omp for reduction (+: tmpX)
+    for (int i = 0; i < rhsEqX.size(); i++)   // идем по всем слагаемым уравнения для X
+    {
+      const double tmpsin = sin(rhsEqX[i].valSin * (dataCoordAtStep[particleNumber].x + KEq.first));            // выражение внутри синуса и косинуса
+      const double tmpcos = cos(rhsEqX[i].valCos * (dataCoordAtStep[particleNumber].y + KEq.second));
+      tmpX += rhsEqX[i].val * (dataDiffAtStep[rhsEqX[i].index] + KTheta[rhsEqX[i].index]) * tmpsin * tmpcos;    // накапливаем, theta + добавка
+    }
 
-#pragma omp parallel for default(shared) reduction(+: tmpY)
-  for (int i = 0; i < rhsEqY.size(); i++)   // идем по всем слагаемым уравнения для Y
-  {
-    const double tmpcos = cos(rhsEqY[i].valCos * (dataCoordAtStep[particleNumber].x + KEq.first));
-    const double tmpsin = sin(rhsEqY[i].valSin * (dataCoordAtStep[particleNumber].y + KEq.second));
-    tmpY += rhsEqY[i].val * (dataDiffAtStep[rhsEqY[i].index] + KTheta[rhsEqY[i].index]) * tmpcos * tmpsin;    // theta + добавка
+    #pragma omp for reduction(+: tmpY)
+    for (int i = 0; i < rhsEqY.size(); i++)   // идем по всем слагаемым уравнения для Y
+    {
+      const double tmpcos = cos(rhsEqY[i].valCos * (dataCoordAtStep[particleNumber].x + KEq.first));
+      const double tmpsin = sin(rhsEqY[i].valSin * (dataCoordAtStep[particleNumber].y + KEq.second));
+      tmpY += rhsEqY[i].val * (dataDiffAtStep[rhsEqY[i].index] + KTheta[rhsEqY[i].index]) * tmpcos * tmpsin;    // theta + добавка
+    }
   }
 
   KEq.first = tmpX;

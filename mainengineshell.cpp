@@ -61,7 +61,7 @@ void MainEngineShell::rk4()
 
   const double h = (tend - tbegin)/stepAmount;    // приращение времени
 
-const int REPEAT_AMOUNT = 2; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const int REPEAT_AMOUNT = 4; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 for (int repeat = 0; repeat < REPEAT_AMOUNT; repeat++)
 {
 
