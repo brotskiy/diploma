@@ -1,7 +1,6 @@
 #ifndef EQ_RHS_CREATION_H
 #define EQ_RHS_CREATION_H
 
-// #define MY_PI 3.1415926535
 #define MY_PI M_PI
 #define MY_ZERO 1e-9
 

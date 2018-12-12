@@ -19,6 +19,8 @@
 
 #include "dialog.h"
 
+#define MY_ZERO 1e-9
+
 typedef QPair<int, int> Pair;
 
 Q_DECLARE_METATYPE(drawing_struct)
@@ -59,6 +61,8 @@ class MainWindow : public QMainWindow
 
     void dialogReadThetasFromFile();
     void readThetasFromFile(const QString& axs);
+
+    void processPeriodicThetas();
 
   signals:
     void wantToOpenFile(const QString& fileName);    // ++

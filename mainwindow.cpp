@@ -13,7 +13,8 @@ void MainWindow::createMenuBar(MainWindow* parent) // OK
   menuFile->addSeparator();      // 1
   menuFile->addAction("Exit");   // 2
 
-  menuTheta->addAction("Read from file");   // 0
+  menuTheta->addAction("Draw trajectory projection");   // 0
+  menuTheta->addAction("Create periodic table");        // 1
 
   toolBar = new QToolBar(parent);
   comboBox = new QComboBox(toolBar);
@@ -41,11 +42,120 @@ void MainWindow::createConnections()
   button = menuBar->actions().at(0)->menu()->actions().at(2);            // Exit
   connect(button, SIGNAL(triggered(bool)), qApp, SLOT(quit()));
 
-  button = menuBar->actions().at(1)->menu()->actions().at(0);           // Read Thetas from File
+  button = menuBar->actions().at(1)->menu()->actions().at(0);           // Draw trajectory projection
   connect(button, &QAction::triggered, this, &MainWindow::dialogReadThetasFromFile);
+
+  button = menuBar->actions().at(1)->menu()->actions().at(1);           // Create periodic table
+  connect(button, &QAction::triggered, this, &MainWindow::processPeriodicThetas);
 
   connect(comboBox, SIGNAL(currentTextChanged(const QString&)), this->centralWidget(), SLOT(setCurrentImg(const QString&)));
 
+}
+
+void MainWindow::processPeriodicThetas()
+{
+  QString name = QFileDialog::getOpenFileName(this, "Explorer", "", "Text files(*.txt)");
+
+  if (name.contains("theta.txt"))
+  {
+    QFile file(name);
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+      QTextStream streamIn(&file);
+      QString tmpStr = streamIn.readLine();
+      const int eqNum = tmpStr.split(" ", QString::SkipEmptyParts).size();
+
+      QVector<QVector<double>> theta;
+      QVector<double> tmpVec(eqNum);
+
+      for (int i = 0; i < eqNum; i++)
+        tmpVec[i] = tmpStr.section(" ", i, i, QString::SectionSkipEmpty).toDouble();
+
+      theta.append(tmpVec);
+
+      int i = 0; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      while (!streamIn.atEnd())
+      {
+        tmpStr = streamIn.readLine();
+
+        for (int i = 0; i < eqNum; i++)
+          tmpVec[i] = tmpStr.section(" ", i, i, QString::SectionSkipEmpty).toDouble();
+
+        i+=1; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (i % 20000 == 0)// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        qDebug() << tmpVec; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        theta.append(tmpVec);
+      }
+
+      QFileInfo processedFileInfo(file);
+      QFile processedFile(processedFileInfo.path() + "/processed_periodic_theta.txt");
+
+      if (processedFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+      {
+        QVector<int> periods(eqNum, 0);
+        QVector<bool> notYetPeriod(eqNum, true);
+        QTextStream streamOut(&processedFile);
+
+        for (int i = theta.size() - 2, generalCount = eqNum; (i >= 0) && (generalCount > 0); i--)
+          for (int j = 0; j < eqNum; j++)
+            if (notYetPeriod[j])
+            {
+              qDebug() << i << j << " | " <<periods[j]; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+              if (theta[i][j] - theta[i+1][j] < 1e-07)
+              {
+                notYetPeriod[j] = false;
+                generalCount--;
+              }
+              else
+                periods[j]++;
+            }
+        // добавить запись периодических тета в файл!!!!!!!!!!!!!!!!!!!!
+        processedFile.close();
+
+
+        for (int i = 0; i < eqNum; i++)   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          qDebug() << i << periods[i];    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      }
+
+      file.close();
+
+      QImage img(1900, 1000, QImage::Format_ARGB32);
+      img.fill(Qt::white);
+
+      QPainter pntr(&img);
+      pntr.setRenderHint(QPainter::Antialiasing);
+      pntr.translate(20, 500);
+      pntr.scale(1,-1);
+      pntr.setPen(QPen(Qt::blue, 1, Qt::SolidLine, Qt::RoundCap));
+
+          qDebug() << theta.size();
+
+      const double scaleX = 1850.0 / theta.size();
+
+      for (int i = 0; i < theta.size(); i++)
+        for (int j = 0; j < eqNum; j++)
+        {
+            //if (i % 20000 == 0)
+              //  qDebug() << theta[i][0];
+
+          qreal xi = scaleX * i;
+          qreal yi = 13 *  theta[i][j];
+
+                // pntr.drawPoint(QPointF(0, 0));
+
+          pntr.drawPoint(QPointF(xi, yi));
+        }
+
+      QLabel* wdgt = new QLabel(this, Qt::Window);
+      wdgt->setAttribute(Qt::WA_DeleteOnClose);
+      wdgt->setGeometry(20, 30, 1900, 1000);
+      wdgt->setPixmap(QPixmap::fromImage(img));
+      wdgt->show();
+    }
+  }
 }
 
 void MainWindow::readThetasFromFile(const QString& axs)
@@ -71,23 +181,21 @@ void MainWindow::readThetasFromFile(const QString& axs)
 
         QPainter pntr(&img);
         pntr.setRenderHint(QPainter::Antialiasing);
-        pntr.translate(1650, -300);
+        pntr.translate(960, 720);
         pntr.scale(1,-1);
         pntr.setPen(QPen(Qt::blue, 1, Qt::SolidLine, Qt::FlatCap));
 
-        const int scaleX = 10000000;
-        const int scaleY = 7000;
+        const int scaleX = 20; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        const int scaleY = 50; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         qreal xi = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();
         qreal yi = scaleY * tmp.section(" ", numY, numY, QString::SectionSkipEmpty).toDouble();
 
-       // pntr.drawLine(QPointF(0,0), QPointF(50,50));
-
-        int i = 0;
+        int i = 0;// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         while (!stream.atEnd())
         {
-          i+=1;
-          if (i % 20000 == 0)
+          i+=1;// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          if (i % 20000 == 0)// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             qDebug() << i << xi/scaleX << yi/scaleY << " | " << xi << yi; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
           tmp = stream.readLine();
@@ -95,7 +203,7 @@ void MainWindow::readThetasFromFile(const QString& axs)
           qreal xii = scaleX * tmp.section(" ", numX, numX, QString::SectionSkipEmpty).toDouble();
           qreal yii = scaleY * tmp.section(" ", numY, numY, QString::SectionSkipEmpty).toDouble();
 
-          if (i > 120000) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          //if (i > 120000) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             pntr.drawLine(QPointF(xi,yi), QPointF(xii,yii));
 
           xi = xii;
@@ -107,7 +215,6 @@ void MainWindow::readThetasFromFile(const QString& axs)
         wdgt->setGeometry(50,50, 1800, 900);
         wdgt->setPixmap(QPixmap::fromImage(img));
         wdgt->show();
-
       }
       file.close();
     }
