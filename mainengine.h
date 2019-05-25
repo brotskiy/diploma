@@ -33,7 +33,7 @@ class MainEngine: public QObject
     QVector<QVector<double>> KThetasAtStep = QVector<QVector<double>>(4); // четыре коэффициента K1, K2, K3, K4
                                                                           // для метода Рунге-Кутты
 
-    void crtBas(QVector<basisCell>& basis);
+    void crtBas(QVector<basisCell>& basis) const;
     void crtEq1(const QVector<basisCell>& basis, QVector<QVector<psiCell>>& psi);
     void crtEq2(const QVector<basisCell>& basis, const QVector<QVector<psiCell>>& psi);
 
@@ -70,6 +70,8 @@ class MainEngine: public QObject
     double getB() const { return bbnd; }
     double getTBegin() const { return tbegin; }
     double getTEnd() const { return tend; }
+    void calculateNusselts(const QVector<QVector<double>>& thetas, const double a, const double b, const int thetaAmount,
+                           QVector<double>& nuv, QVector<double>& nuh);  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 };
 
 #endif // MAINENGINE_H

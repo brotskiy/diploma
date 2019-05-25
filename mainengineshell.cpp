@@ -107,3 +107,9 @@ void MainEngineShell::writeDataToFiles()
 
   emit unblockOpen();
 }
+
+void MainEngineShell::calcNusselts(const QVector<QVector<double>>& thetas, const double a, const double b, const int thetaAmount,
+                                   QVector<double>& nuv, QVector<double>& nuh)
+{
+  engn->calculateNusselts(thetas, a, b, thetaAmount, nuv, nuh);
+}

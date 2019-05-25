@@ -64,6 +64,8 @@ class MainWindow : public QMainWindow
 
     void processPeriodicThetas();
 
+    void calculateNusselts();
+
   signals:
     void wantToOpenFile(const QString& fileName);    // ++
     void partAmount(int prtAm);
