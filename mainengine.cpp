@@ -86,7 +86,7 @@ void MainEngine::readFromFile(const QString& fileName) // ++
   }
 }
 
-void MainEngine::crtBas(QVector<basisCell>& basis)    // ++
+void MainEngine::crtBas(QVector<basisCell>& basis) const    // ++
 {
   int cntr = 0;
 
@@ -258,6 +258,37 @@ void MainEngine::crtCoords(const QVector<basisCell>& basis, const QVector<QVecto
   }
 }
 
+void MainEngine::calculateNusselts(const QVector<QVector<double>>& thetas, const double a, const double b, const int thetaAmount,
+                                            QVector<double>& nuv, QVector<double>& nuh)    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+{
+  equationAmount = thetaAmount;
+
+  QVector<basisCell> basis(thetaAmount);
+  crtBas(basis);
+
+  const int stepAmount = thetas.size();
+
+  for (int step = 0; step < stepAmount; step++)
+  {
+    nuv[step] = 0;
+    nuh[step] = 0;
+
+    for (int k = 0; k < thetaAmount; k++)
+    {
+      const int i = basis[k].i;
+      const int j = basis[k].j;
+
+    //  qDebug() << i << " " << j;
+
+      nuv[step] += thetas[step][k] * 2*j*a / (sqrt(a*b)*b*i) * (1 - cos(MY_PI * i)); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      nuh[step] += thetas[step][k] * 2*i*b / (sqrt(a*b)*a*j) * (1 - cos(MY_PI * j)) * cos(0.5 * MY_PI * i);  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      if ((k % 50 == 0) && (step % 200 == 0))
+        qDebug() << "nuv = "<< nuv[step] << "  nuh = " << nuh[step];
+    }
+  }
+}
+
 void MainEngine::createEqRhs(const QString& fileName)   // ++
 {
   QFile file(fileName);
@@ -355,3 +386,4 @@ void MainEngine::rk4_step(const double h, const int step)
 {
   rk4step(rhs, data, tbegin, h, step, equationAmount, particleAmount, L, KThetasAtStep);
 }
+

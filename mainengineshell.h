@@ -30,6 +30,8 @@ class MainEngineShell: public QObject
   void drawBorders();                               //  ++
   void rk4();                                       //  ++
   void writeDataToFiles();                    //  ++
+  void calcNusselts(const QVector<QVector<double> >& thetas, const double a, const double b, const int thetaAmount,
+                    QVector<double>& nuv, QVector<double>& nuh);                                                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   public slots:
     void openInitialFile(const QString& fileName);   // ++
